@@ -4,8 +4,10 @@ from iso8601 import parse_date
 class AlbumImage(object):
     def __init__(self, image):
         if "Image" in image["Uris"]:
+            # image is endpoint AlbumImage
             self.uri = image["Uris"]["Image"]
         else:
+            # image is endpoint Image
             self.uri = image["Uri"]
 
         self.title = image["Title"]
@@ -13,6 +15,7 @@ class AlbumImage(object):
         self.keywords = image["Keywords"]
         self.filename = image["FileName"]
         self.archived_size = image["ArchivedSize"]
+        self.image_key = image["ImageKey"]
         self.last_updated = parse_date(image["LastUpdated"]).replace(tzinfo=None)
 
     @classmethod

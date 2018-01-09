@@ -21,10 +21,17 @@ class Image(object):
     def get_image(cls, connection, image_uri):
         return cls(connection.get(image_uri)["Image"])
 
-    @staticmethod
-    def delete_image(connection, image_uri):
-        return connection.delete(image_uri)
+    def delete_image(self, connection):
+        return connection.delete(self.uri)
 
-    @staticmethod
-    def change_image(connection, image_uri, changes):
-        return Image(connection.patch(image_uri, changes)["Response"]["Image"])
+    def change_image(self, connection, changes):
+        '''
+        :param connection:
+        :param dict changes: example {"Keyword" : "Snow"}
+        :return:
+        '''
+        return Image(connection.patch(self.uri, changes)["Response"]["Image"])
+
+    def set_keywords(self, connection, keywords):
+        d = {"KeywordArray": keywords}
+        return self.change_image(connection, d)

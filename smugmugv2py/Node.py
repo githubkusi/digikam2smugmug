@@ -3,11 +3,59 @@ from pprint import pprint
 
 
 class Node(object):
+    '''
+    FOLDER
+    NodeID:  VmPBjP
+    Uri:     /api/v2/node/VmPBjP
+    Name:    testfolder
+    UrlName: Testfolder
+    UrlPath: /Testfolder
+    WebUri:  http://photos.leuthold.org/Testfolder/n-VmPBjP
+    Type:    Folder
+
+    SUBFOLDER
+    NodeID:  gQ5JpD
+    Uri:     /api/v2/node/gQ5JpD
+    Name:    Subfolder
+    UrlName: SubfolderUrl
+    UrlPath: /Testfolder/SubfolderUrl
+    WebUri:  http://photos.leuthold.org/Testfolder/SubfolderUrl/n-gQ5JpD
+    Type:    Folder
+
+    ALBUM IN SUBFOLDER (AS NODE)
+    NodeID:  gQCKtt
+    Uri:     /api/v2/node/gQCKtt
+    Name:    Album
+    UrlName: AlbumUrl
+    UrlPath: /Testfolder/SubfolderUrl/AlbumUrl
+    WebUri:  http://photos.leuthold.org/Testfolder/SubfolderUrl/AlbumUrl/n-gQCKtt
+    Type:    Album
+
+    SAME ALBUM IN SUBFOLDER (AS ALBUM)
+    NodeID:  gQCKtt
+    Uri:     /api/v2/album/7fVP8m
+    Name:    Album
+    UrlName: AlbumUrl
+    UrlPath: /Testfolder/SubfolderUrl/AlbumUrl
+    WebUri:  http://photos.leuthold.org/Testfolder/SubfolderUrl/AlbumUrl/n-gQCKtt
+
+    ALBUMIMAGE IN ALBUM (COLLECTED)
+    Uri:       /api/v2/album/7fVP8m/image/KnjKc5p-0
+    ImageKey:  KnjKc5p
+    FileName:  IMG_2167.JPG
+    WebUri:    http://photos.leuthold.org/Testfolder/SubfolderUrl/AlbumUrl/n-gQCKtt/i-KnjKc5p
+
+    IMAGE IN ORIGINAL ALBUM
+    Uri:         /api/v2/image/KnjKc5p-0
+    ArchivedUri: https://photos.smugmug.com/17h10-Flumserberg/i-KnjKc5p/0/14ab3392/D/IMG_2167-D.jpg
+    WebUri:      http://photos.leuthold.org/17h10-Flumserberg/i-KnjKc5p
+    '''
     def __init__(self, node):
         self.uri = node["Uri"]
         self.description = node["Description"]
         self.name = node["Name"]
         self.url_name = node["UrlName"]
+        self.url_path = node["UrlPath"]
         self.type = node["Type"]
         self.privacy = node["Privacy"]
         self.has_children = node["HasChildren"]
@@ -63,6 +111,7 @@ class Node(object):
         return connection.post(self.__child_nodes, data=dumps(params), headers=headers)
 
     def create_child_folder(self, connection, name, url, privacy, description=None):
+        # url needs to start with a capital letter or number
         response = self.__create_child_node(connection, 'Folder', name, url, privacy, description)
 
         if "Node" not in response["Response"]:
@@ -83,3 +132,17 @@ class Node(object):
 
     def change_node(self, connection, changes):
         return connection.patch(self.uri, changes)["Response"]["Node"]
+
+    def find_node_by_url_name(self, connection, url_name):
+        for node in self.get_children(connection):
+            if node.url_name == url_name:
+                return node
+
+        return None
+
+    def find_album_by_url_name(self, connection, url_name):
+        for node in self.get_children(connection):
+            if node.url_name == url_name:
+                return node
+
+        return None
