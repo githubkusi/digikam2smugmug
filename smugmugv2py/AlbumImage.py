@@ -1,15 +1,17 @@
 from iso8601 import parse_date
+from .Image import Image
 
 
 class AlbumImage(object):
     def __init__(self, image):
-        if "Image" in image["Uris"]:
-            # image is endpoint AlbumImage
-            self.uri = image["Uris"]["Image"]
-        else:
-            # image is endpoint Image
-            self.uri = image["Uri"]
-
+        # if "Image" in image["Uris"]:
+        #     # image is endpoint AlbumImage
+        #     self.uri = image["Uris"]["Image"]
+        # else:
+        #     # image is endpoint Image
+        #     self.uri = image["Uri"]
+        self.uri = image["Uri"]
+        self.image_uri = image["Uris"]["Image"]
         self.title = image["Title"]
         self.caption = image["Caption"]
         self.keywords = image["Keywords"]
@@ -26,5 +28,8 @@ class AlbumImage(object):
     def delete_album_image(self, connection):
         return connection.delete(self.uri)
 
-    def change_album_image(self, connection, changes):
-        return AlbumImage(connection.patch(self.uri, changes)["Response"]["Image"])
+    def get_image(self, connection):
+        # unneeded connection. since props of Image and AlbumImage are (almost) identical,
+        # they could just be copied over
+        return Image.get_image(connection, self.image_uri)
+
