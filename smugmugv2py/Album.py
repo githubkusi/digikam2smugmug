@@ -17,13 +17,15 @@ class Album(object):
 
     @classmethod
     def get_album(cls, connection, album_uri):
-        return cls(connection.get(album_uri)["Album"])
+        response, code = connection.get(album_uri)
+        return cls(response["Album"])
 
     def get_album_images(self, connection):
         ret = []
 
         if self.image_count:
-            images = connection.get(self.__images)["AlbumImage"]
+            response, code = connection.get(self.__images)
+            images = response["AlbumImage"]
             for image in images:
                 this_image = AlbumImage(image)
                 ret.append(this_image)
@@ -34,7 +36,8 @@ class Album(object):
         ret = []
 
         if self.image_count:
-            album_images = connection.get(self.__images)["AlbumImage"]
+            response, code = connection.get(self.__images)
+            album_images = response["AlbumImage"]
             for album_image in album_images:
                 image = Image.from_album_image(album_image)
                 ret.append(image)

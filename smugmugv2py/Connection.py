@@ -99,7 +99,7 @@ class Connection(object):
                 ).text)
 
                 if "Response" in response:
-                    return response["Response"]
+                    return response["Response"], response["Code"]
                 else:
                     raise smugmugv2py.SmugMugv2Exception(response["Message"])
 

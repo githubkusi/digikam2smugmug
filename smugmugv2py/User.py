@@ -9,8 +9,10 @@ class User(object):
 
     @classmethod
     def get_authorized_user(cls, connection):
-        return cls(connection.get(Connection.BASE_URL + '!authuser')["User"])
+        response, code = connection.get(Connection.BASE_URL + '!authuser')
+        return cls(response["User"])
 
     @classmethod
     def get_specific_user(cls, connection, user):
-        return cls(connection.get(Connection.BASE_URL + "/user/" + user)["User"])
+        response, code = connection.get(Connection.BASE_URL + "/user/" + user)
+        return cls(response["User"])

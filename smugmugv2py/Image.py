@@ -19,7 +19,9 @@ class Image(object):
 
     @classmethod
     def get_image(cls, connection, image_uri):
-        return cls(connection.get(image_uri)["Image"])
+        response, code = connection.get(image_uri)
+        assert code == 200
+        return cls(response["Image"])
 
     def delete_image(self, connection):
         return connection.delete(self.uri)

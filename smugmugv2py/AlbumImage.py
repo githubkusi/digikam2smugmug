@@ -19,8 +19,9 @@ class AlbumImage(object):
         self.last_updated = parse_date(image["LastUpdated"]).replace(tzinfo=None)
 
     @classmethod
-    def get_album_image(cls, connection, image_uri):
-        return cls(connection.get(image_uri)["Image"])
+    def get_album_image(cls, connection, album_image_uri):
+        response, code = connection.get(album_image_uri)
+        return cls(response["AlbumImage"])
 
     def delete_album_image(self, connection):
         return connection.delete(self.uri)

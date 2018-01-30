@@ -77,13 +77,14 @@ class Node(object):
 
     @classmethod
     def get_node(cls, connection, node_uri):
-        return cls(connection.get(node_uri)["Node"])
+        response, code = connection.get(node_uri)
+        return cls(response["Node"])
 
     def get_children(self, connection):
         ret = []
 
         if self.has_children:
-            response = connection.get(self.__child_nodes)
+            response, code = connection.get(self.__child_nodes)
             if 'Node' in response:
                 nodes = response["Node"]
                 for node in nodes:
