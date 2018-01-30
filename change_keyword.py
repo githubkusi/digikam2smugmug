@@ -166,16 +166,26 @@ def main():
         passwd='dkpasswd',
         db='digikam_devel_core')
 
+    dk = Digikam()
+    dk_image_ids = dk.get_synched_image_ids(cursor)
+    for dk_image_id in dk_image_ids:
+        keywords = dk.get_tags(cursor, dk_image_id)
+        album_image_uri = dk.get_remote_id(cursor, dk_image_id)
+        album_image = AlbumImage.get_album_image(connection, album_image_uri)
+        image = album_image.get_image(connection)
+        image.set_keywords(connection, keywords)
+
+    exit(1)
     # connection.get_code('/api/v2/image/rvNZsjK')
 
-    images_id = Digikam.get_unsynced_image_id(cursor)
+    dk_image_ids = Digikam.get_unsynced_image_ids(cursor)
 
     # Node.get_node(connection, '/api/v2/node/gQ5JpD')
 
     root_path = '/tmp/digikam-debug-pics'
     dks = DkSmug()
-    for image_id in images_id:
-        album_url_path, image_name = Digikam.get_album_url_path_and_image_name(cursor, image_id)
+    for dk_image_id in dk_image_ids:
+        album_url_path, image_name = Digikam.get_album_url_path_and_image_name(cursor, dk_image_id)
         file_path = os.path.join(root_path + album_url_path, image_name)
         album_node = dks.get_or_create_album_from_album_path(connection, dk_node, album_url_path)
 
@@ -188,7 +198,7 @@ def main():
         else:
             print("upload image {} to album {}".format(image_name, album_node.name))
             response = connection.upload_image(file_path, album_node.uri)
-            Digikam.add_image_to_photosharing(conn_dk, cursor, image_id, response["Image"]["AlbumImageUri"])
+            Digikam.add_image_to_photosharing(conn_dk, cursor, dk_image_id, response["Image"]["AlbumImageUri"])
 
 
     #
