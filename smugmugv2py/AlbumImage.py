@@ -12,6 +12,7 @@ class AlbumImage(object):
         #     self.uri = image["Uri"]
         self.uri = image["Uri"]
         self.image_uri = image["Uris"]["Image"]
+        self.album_uri = image["Uris"]["Album"]
         self.title = image["Title"]
         self.caption = image["Caption"]
         self.keywords = image["Keywords"]
