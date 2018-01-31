@@ -25,10 +25,22 @@ class Digikam:
     @staticmethod
     def get_unsynced_image_ids(cursor):
         query = """
-        SELECT Images.Id
-        FROM Images
-        LEFT JOIN PhotoSharing ON PhotoSharing.imageid = Images.id
-        WHERE PhotoSharing.imageid IS NULL
+        SELECT
+            Images.Id
+        FROM
+            Images
+        LEFT JOIN PhotoSharing ON
+            PhotoSharing.imageid = Images.id
+        INNER JOIN ImageInformation ON
+            ImageInformation.imageid = Images.id
+        INNER JOIN ImageTags ON 
+            ImageTags.imageid = Images.id
+        INNER JOIN Tags ON
+            Tags.id = ImageTags.tagid 
+        WHERE
+            PhotoSharing.imageid IS NULL and ImageInformation.rating >= 1
+            AND
+            Tags.name = "Smugmug" 
         """
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -45,24 +57,36 @@ class Digikam:
 
     @staticmethod
     def get_tags(cursor, image_id):
+        query = "select id from Tags where name = \"_Digikam_Internal_Tags_\""
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        assert rows.__len__() == 1, "mysql: internal dk tag not found"
+        iid = rows[0][0]
+
+        query = "select id from Tags where name = \"_Digikam_root_tag_\""
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        assert rows.__len__() == 1, "mysql: root dk tag not found"
+        rid = rows[0][0]
+
         query = """
         select t1.name
         from Tags t1
         inner join ImageTags on ImageTags.tagid = t1.id
-        where ImageTags.imageid = {} and t1.id > 20
+        where ImageTags.imageid = {} and t1.pid <> {} and t1.id <> {} and t1.id <> {}
         union all
         select t2.name
         from Tags t1
         left join Tags t2 on t2.id=t1.pid
         inner join ImageTags on ImageTags.tagid = t1.id
-        where ImageTags.imageid = {} and t2.id > 20
+        where ImageTags.imageid = {} and t2.pid <> {} and t2.id <> {} and t2.id <> {}
         union all
         select t3.name
         from Tags t1
         left join Tags t2 on t2.id=t1.pid
         left join Tags t3 on t3.id=t2.pid
         inner join ImageTags on ImageTags.tagid = t1.id
-        where ImageTags.imageid = {} and t3.id > 20
+        where ImageTags.imageid = {} and t3.pid <> {} and t3.id <> {} and t3.id <> {}
         union all
         select t4.name
         from Tags t1
@@ -70,8 +94,8 @@ class Digikam:
         left join Tags t3 on t3.id=t2.pid
         left join Tags t4 on t4.id=t3.pid
         inner join ImageTags on ImageTags.tagid = t1.id
-        where ImageTags.imageid = {} and t4.id > 20
-        """.format(image_id, image_id, image_id, image_id)
+        where ImageTags.imageid = {} and t4.pid <> {} and t4.id <> {} and t4.id <> {}
+        """.format(image_id, iid, iid, rid, image_id, iid, iid, rid, image_id, iid, iid, rid, image_id, iid, iid, rid)
         cursor.execute(query)
         rows = cursor.fetchall()
         keywords = [x[0] for x in rows]  # (('blue',), ('Lifesaver',))

@@ -1,6 +1,8 @@
 from os import path
 from .Album import Album
+from .AlbumImage import AlbumImage
 from .Node import Node
+
 
 class DkSmug:
     def __init__(self):
@@ -27,17 +29,20 @@ class DkSmug:
         return node
 
     @staticmethod
-    def get_or_create_album_from_album_name(connection, node_uri, url_name):
+    def get_or_create_album_from_album_name(connection, node_uri, name):
         '''
         :param connection:
         :param node:
-        :param url_name: /Testfolder/SubfolderUrl/AlbumUrl
+        :param name: /Testfolder/SubfolderUrl/AlbumUrl with space
         :return:
         '''
+
+        url_name = name.replace(' ','-')
+
         node = Node.get_node(connection, node_uri)
         album_node = node.find_node_by_url_name(connection, url_name)
         if album_node is None:
-            album_node = node.create_child_album(connection, url_name, url_name, 'Private')
+            album_node = node.create_child_album(connection, name, url_name, 'Private')
 
         return Album.get_album(connection, album_node.album_uri)
 
@@ -59,4 +64,14 @@ class DkSmug:
         # album = Album.get_album(connection, album)
         return connection.upload_image(file_path, album_node.uri)
 
+    @staticmethod
+    def sync_tags(dk, cursor, connection):
+        dk_image_ids = dk.get_synched_image_ids(cursor)
+        for dk_image_id in dk_image_ids:
+            keywords = dk.get_tags(cursor, dk_image_id)
+            album_image_uri = dk.get_remote_id(cursor, dk_image_id)
+            album_image = AlbumImage.get_album_image(connection, album_image_uri)
+            image = album_image.get_image(connection)
+            print("set keywords on " + image.filename, keywords)
+            image.set_keywords(connection, keywords)
 
