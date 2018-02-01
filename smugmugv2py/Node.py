@@ -80,10 +80,15 @@ class Node(object):
         response, code = connection.get(node_uri)
         return cls(response["Node"])
 
+    def has_children_online(self, connection):
+        response, code = connection.get(self.uri)
+        hc = response["Node"]["HasChildren"]
+        return hc
+
     def get_children(self, connection):
         ret = []
 
-        if self.has_children:
+        if self.has_children_online(connection):
             response, code = connection.get(self.__child_nodes)
             if 'Node' in response:
                 nodes = response["Node"]
