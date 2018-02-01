@@ -13,7 +13,6 @@ class DkSmug:
         # if url_path in cache.keys():
         #     return node.get_node(cache[url_path])
 
-        print(url_path)
         s = url_path.split('/')
         folder_names = s[1:]
 
@@ -21,9 +20,11 @@ class DkSmug:
             child_node = node.find_node_by_url_name(connection, folder_name)
             if child_node is None:
                 # Folder does not exist, create new
+                print("create folder " + folder_name)
                 node = node.create_child_folder(connection, folder_name, folder_name, 'Private')
             else:
                 # Folder exists, use child node
+                print("use existing folder" + folder_name)
                 node = child_node
 
         return node
