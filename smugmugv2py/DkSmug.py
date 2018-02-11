@@ -11,20 +11,18 @@ class DkSmug:
         self.bla = 'hello'
 
     @staticmethod
-    def get_or_create_node_from_folder_path(connection, node, url_path):
+    def get_or_create_node_from_folder_path(connection, node, folder_path):
         # if url_path in cache.keys():
         #     return node.get_node(cache[url_path])
 
-        s = url_path.split('/')
-        folder_names = s[1:]
+        folder_names = folder_path.strip(os.sep).split(os.sep)
 
         for folder_name in folder_names:
-            child_node = node.find_node_by_url_name(connection, folder_name)
+            child_node = node.find_node_by_name(connection, folder_name)
             if child_node is None:
                 # Folder does not exist, create new
                 print("create folder " + folder_name)
-                url_name = folder_name.replace(' ', '-')
-                node = node.create_child_folder(connection, folder_name, url_name, 'Private')
+                node = node.create_child_folder(connection, folder_name, None, 'Private')
             else:
                 # Folder exists, use child node
                 print("use existing folder " + folder_name)
@@ -33,27 +31,18 @@ class DkSmug:
         return node
 
     @staticmethod
-    def get_or_create_album_from_album_name(connection, node_uri, name):
-        '''
-        :param connection:
-        :param node:
-        :param name: /Testfolder/SubfolderUrl/AlbumUrl with space
-        :return:
-        '''
-
-        url_name = name.replace(' ', '-')
-
+    def get_or_create_album_from_album_name(connection, node_uri, album_name):
         node = Node.get_node(connection, node_uri)
-        album_node = node.find_node_by_url_name(connection, url_name)
+        album_node = node.find_node_by_name(connection, album_name)
         if album_node is None:
-            print("create album " + name + " in folder " + node.url_path)
-            album_node = node.create_child_album(connection, name, url_name, 'Private')
+            print("create album " + album_name + " in folder " + node.url_path)
+            album_node = node.create_child_album(connection, name=album_name, url=None, privacy='Private')
 
         return Album.get_album(connection, album_node.album_uri)
 
-    def get_or_create_album_from_album_path(self, connection, node, url_path):
-        folder_path, album_name = path.split(url_path)
-        if folder_path == '/':
+    def get_or_create_album_from_album_path(self, connection, node, album_path):
+        folder_path, album_name = path.split(album_path)
+        if folder_path == os.sep:
             # no folder, album is attached at the root node
             folder_node = node
         else:
