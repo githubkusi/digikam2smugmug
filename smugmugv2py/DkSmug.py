@@ -1,4 +1,6 @@
 from os import path
+import os
+import glob
 from .Album import Album
 from .AlbumImage import AlbumImage
 from .Node import Node
@@ -21,10 +23,11 @@ class DkSmug:
             if child_node is None:
                 # Folder does not exist, create new
                 print("create folder " + folder_name)
-                node = node.create_child_folder(connection, folder_name, folder_name, 'Private')
+                url_name = folder_name.replace(' ', '-')
+                node = node.create_child_folder(connection, folder_name, url_name, 'Private')
             else:
                 # Folder exists, use child node
-                print("use existing folder" + folder_name)
+                print("use existing folder " + folder_name)
                 node = child_node
 
         return node
@@ -38,11 +41,12 @@ class DkSmug:
         :return:
         '''
 
-        url_name = name.replace(' ','-')
+        url_name = name.replace(' ', '-')
 
         node = Node.get_node(connection, node_uri)
         album_node = node.find_node_by_url_name(connection, url_name)
         if album_node is None:
+            print("create album " + name + " in folder " + node.url_path)
             album_node = node.create_child_album(connection, name, url_name, 'Private')
 
         return Album.get_album(connection, album_node.album_uri)
@@ -57,6 +61,16 @@ class DkSmug:
 
         return self.get_or_create_album_from_album_name(connection, folder_node.uri, album_name)
 
+    @staticmethod
+    def folder_contains_media_files(root_path, folder_path):
+        extensions = ['*.jpg', '*.JPG', '*.mov', '*.MOV', '*.mp4', '*.wmv', '*.WMV']
+        for ext in extensions:
+            p = path.join(root_path, folder_path.strip(os.sep), ext)
+            if glob.glob(p).__len__() > 0:
+                return True
+
+        return False
+
     # @staticmethod
     # def image_exists(image_id, connection):
 
@@ -66,13 +80,18 @@ class DkSmug:
         return connection.upload_image(file_path, album_node.uri)
 
     @staticmethod
-    def sync_tags(dk, cursor, connection):
+    def sync_tags(dk, cursor, conn_dk, connection):
         dk_image_ids = dk.get_synched_image_ids(cursor)
+        # dk_image_ids = [667587]
         for dk_image_id in dk_image_ids:
-            keywords = dk.get_tags(cursor, dk_image_id)
-            album_image_uri = dk.get_remote_id(cursor, dk_image_id)
-            album_image = AlbumImage.get_album_image(connection, album_image_uri)
-            image = album_image.get_image(connection)
-            print("set keywords on " + image.filename, keywords)
-            image.set_keywords(connection, keywords)
+            mtime_local = dk.get_local_tags_mtime(cursor, dk_image_id)
+            mtime_remote = dk.get_remote_tags_mtime(cursor, dk_image_id)
 
+            if mtime_local is not None and mtime_local > mtime_remote:
+                keywords = dk.get_tags(cursor, dk_image_id)
+                album_image_uri = dk.get_remote_id(cursor, dk_image_id)
+                album_image = AlbumImage.get_album_image(connection, album_image_uri)
+                image = album_image.get_image(connection)
+                print("set keywords on " + image.filename, keywords)
+                image.set_keywords(connection, keywords)
+                dk.update_mtime_tags(conn_dk, cursor, dk_image_id)

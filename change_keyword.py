@@ -182,13 +182,25 @@ def main():
     dk_node = get_digikam_node(connection)
 
     conn_dk, cursor, root_path = real_collection()
+    # conn_dk, cursor, root_path = debug_collection()
 
     dk_image_ids = Digikam.get_unsynced_image_ids(cursor)
+    print("Found {} unsynced images".format(dk_image_ids.__len__()))
 
     dks = DkSmug()
     for dk_image_id in dk_image_ids:
         album_url_path, image_name = Digikam.get_album_url_path_and_image_name(cursor, dk_image_id)
+        if album_url_path is None:
+            print("image id {} not found".format(dk_image_id))
+            continue
         file_path = os.path.join(root_path + album_url_path, image_name)
+
+        # check validity of structure
+        parent_folder_path, album_name = path.split(album_url_path)
+        if dks.folder_contains_media_files(root_path, parent_folder_path.strip(os.sep)):
+            print("<{}>: <{}> is an invalid album since there are media files in <{}>".format(image_name, album_name, parent_folder_path))
+            continue
+
         album_node = dks.get_or_create_album_from_album_path(connection, dk_node, album_url_path)
 
         album_images = album_node.get_album_images(connection)
@@ -200,9 +212,10 @@ def main():
         else:
             print("upload image {} to album {}".format(image_name, album_node.name))
             response = connection.upload_image(file_path, album_node.uri)
+            assert response['stat'] == 'ok'
             Digikam.add_image_to_photosharing(conn_dk, cursor, dk_image_id, response["Image"]["AlbumImageUri"])
 
-    DkSmug.sync_tags(Digikam(), cursor, connection)
+    DkSmug.sync_tags(Digikam(), cursor, conn_dk, connection)
 
 
 if __name__ == "__main__":

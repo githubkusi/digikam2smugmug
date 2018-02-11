@@ -19,29 +19,42 @@ class Digikam:
         where Images.id = {} and 
         Albums.id = Images.album 
         """.format(image_id)
+
         cursor.execute(query)
-        return cursor.fetchone()
+        res = cursor.fetchone()
+        if res is None:
+            return None, None
+        return res
 
     @staticmethod
     def get_unsynced_image_ids(cursor):
         query = """
         SELECT
-            Images.Id
+            Images.id
         FROM
             Images
         LEFT JOIN PhotoSharing ON
             PhotoSharing.imageid = Images.id
         INNER JOIN ImageInformation ON
             ImageInformation.imageid = Images.id
-        INNER JOIN ImageTags ON 
-            ImageTags.imageid = Images.id
-        INNER JOIN Tags ON
-            Tags.id = ImageTags.tagid 
         WHERE
-            PhotoSharing.imageid IS NULL and ImageInformation.rating >= 1
-            AND
-            Tags.name = "Smugmug" 
+            PhotoSharing.imageid IS NULL
+            and ImageInformation.rating >= 1            
+            AND Images.status = 1
+            AND Images.id not in(
+                SELECT
+                    Images.id
+                FROM
+                    Images
+                INNER JOIN ImageTags ON
+                    ImageTags.imageid = Images.id
+                INNER JOIN Tags ON
+                    Tags.id = ImageTags.tagid
+                WHERE
+                    Tags.name = "nosync"
+            )
         """
+        # AND ImageInformation.creationDate > '2017-10-01 15:00:00'
         cursor.execute(query)
         rows = cursor.fetchall()
         image_ids = [x[0] for x in rows]
@@ -54,6 +67,14 @@ class Digikam:
         rows = cursor.fetchall()
         image_ids = [x[0] for x in rows]
         return image_ids
+
+    @staticmethod
+    def get_internal_tagid(cursor):
+        query = "select id from Tags where name = \"_Digikam_Internal_Tags_\""
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        assert rows.__len__() == 1, "mysql: internal dk tag not found"
+        return rows[0][0]
 
     @staticmethod
     def get_tags(cursor, image_id):
@@ -113,7 +134,43 @@ class Digikam:
         remote_id = rows[0][0]
         return remote_id
 
+    @staticmethod
+    def update_mtime_tags(conn_dk, cursor, image_id):
+        query = """
+            UPDATE PhotoSharing SET mtime_tags = CURRENT_TIMESTAMP
+            WHERE imageid = {}
+            """.format(image_id)
+        cursor.execute(query)
+        conn_dk.commit()
 
+    def get_local_tags_mtime(self, cursor, image_id):
+        '''
+        :param cursor:
+        :param image_id:
+        :return: get youngest timestamp of all tags
+        '''
+        internal_id = self.get_internal_tagid(cursor)
+
+        query = """
+                SELECT max(mtime) FROM ImageTags
+                INNER JOIN Tags on Tags.id = ImageTags.tagid
+                WHERE imageid = {} and Tags.pid <> {}
+                """.format(image_id, internal_id)
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        assert rows.__len__() == 1
+        return rows[0][0]
+
+    @staticmethod
+    def get_remote_tags_mtime(cursor, image_id):
+        query = """
+                SELECT mtime_tags FROM PhotoSharing
+                WHERE imageid = {}
+                """.format(image_id)
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        assert rows.__len__() == 1
+        return rows[0][0]
 
     # @staticmethod
     # def get_root_path(self):
