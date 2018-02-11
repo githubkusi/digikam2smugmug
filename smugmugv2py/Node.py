@@ -152,4 +152,16 @@ class Node(object):
             if node.url_name == url_name:
                 return node
 
+    def find_node_by_name(self, connection, name):
+        for node in self.get_children(connection):
+            if node.name == name:
+                return node
+
+        return None
+
+    def find_album_by_name(self, connection, name):
+        for node in self.get_children(connection):
+            if node.name == name:
+                return node
+
         return None
