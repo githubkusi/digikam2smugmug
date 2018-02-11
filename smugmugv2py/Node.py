@@ -120,8 +120,9 @@ class Node(object):
         # url needs to start with a capital letter or number
         response = self.__create_child_node(connection, 'Folder', name, url, privacy, description)
 
-        if "Node" not in response["Response"]:
-            pprint(response)
+        if response['Code'] is not 201:
+            print("Error from SmugMug:\nCode: {}\nMessage: {}"
+                  .format(response['Code'], response['Message']))
 
         return Node(response["Response"]["Node"])
 
