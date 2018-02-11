@@ -104,12 +104,19 @@ class Node(object):
             'Content-Type': 'application/json',
         }
 
-        params = {
-            'Type': type,
-            'Name': name,
-            'UrlName': url,
-            'Privacy': privacy,
-        }
+        if url is None:
+            params = {
+                'Type': type,
+                'Name': name,
+                'Privacy': privacy,
+            }
+        else:
+            params = {
+                'Type': type,
+                'Name': name,
+                'UrlName': url,
+                'Privacy': privacy,
+            }
 
         if description:
             params['Description'] = description
