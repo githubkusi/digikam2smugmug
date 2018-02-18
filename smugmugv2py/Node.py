@@ -121,25 +121,22 @@ class Node(object):
         if description:
             params['Description'] = description
 
-        return connection.post(self.__child_nodes, data=dumps(params), headers=headers)
-
-    def create_child_folder(self, connection, name, url, privacy, description=None):
-        # url needs to start with a capital letter or number
-        response = self.__create_child_node(connection, 'Folder', name, url, privacy, description)
+        response = connection.post(self.__child_nodes, data=dumps(params), headers=headers)
 
         if response['Code'] is not 201:
             print("Error from SmugMug:\nCode: {}\nMessage: {}"
                   .format(response['Code'], response['Message']))
 
-        return Node(response["Response"]["Node"])
+        return response['Response']
+
+    def create_child_folder(self, connection, name, url, privacy, description=None):
+        # url needs to start with a capital letter or number
+        response = self.__create_child_node(connection, 'Folder', name, url, privacy, description)
+        return Node(response["Node"])
 
     def create_child_album(self, connection, name, url, privacy, description=None):
         response = self.__create_child_node(connection, 'Album', name, url, privacy, description)
-
-        if "Node" not in response["Response"]:
-            pprint(response)
-
-        return Node(response["Response"]["Node"])
+        return Node(response["Node"])
 
     def delete_node(self, connection):
         return connection.delete(self.uri)
