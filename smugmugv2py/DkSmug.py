@@ -60,8 +60,14 @@ class DkSmug:
 
         return False
 
-    # @staticmethod
-    # def image_exists(image_id, connection):
+    @staticmethod
+    def get_album_image_uri_from_name(image_name, connection, album_node):
+        album_images = album_node.get_album_images(connection)
+        for album_image in album_images:
+            if image_name == album_image.filename:
+                return album_image.uri
+
+        return None
 
     def upload_image(self, connection, root_node, file_path, album_url_path):
         album_node = self.get_or_create_album_from_album_path(connection, root_node, album_url_path)

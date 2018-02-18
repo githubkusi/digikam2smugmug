@@ -195,4 +195,14 @@ class Digikam:
         conn_dk.commit()
         return cursor.fetchone()
 
+    @staticmethod
+    def is_image_in_photosharing(conn_dk, cursor, remote_id):
+        query = """
+                SELECT imageid FROM PhotoSharing
+                WHERE remoteid = "{}";
+                """.format(remote_id)
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        return rows.__len__() > 0
+
 

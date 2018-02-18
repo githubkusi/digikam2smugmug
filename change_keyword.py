@@ -203,13 +203,13 @@ def main():
 
         album_node = dks.get_or_create_album_from_album_path(connection, dk_node, album_url_path)
 
-        album_images = album_node.get_album_images(connection)
-        file_names = [album_image.filename for album_image in album_images]
+        album_image_uri = dks.get_album_image_uri_from_name(image_name, connection, album_node)
 
-        if image_name in file_names:
-            print("{} already in album {}, skipping".format(image_name, album_node.name))
+        image_is_remote = album_image_uri is not None
+        remote_id_is_in_database = image_is_remote and Digikam.is_image_in_photosharing(conn_dk, cursor, album_image_uri)
 
-        else:
+        if not image_is_remote and not remote_id_is_in_database:
+            # normal case: upload
             print("upload image {} to album {}".format(image_name, album_node.name))
             keywords = Digikam.get_tags(cursor, dk_image_id)
             keywords = '; '.join(keywords)
@@ -217,6 +217,22 @@ def main():
             assert response['stat'] == 'ok', response['message']
             Digikam.add_image_to_photosharing(conn_dk, cursor, dk_image_id, response["Image"]["AlbumImageUri"])
 
+        elif image_is_remote and not remote_id_is_in_database:
+            # Image is remote, but not in PhotoSharing(e.g if uploader
+            # crashes after upload but before PhotoSharing insert or image
+            # was uploaded outside uploader)
+            print("{} already in remote album {}. Add to local database with remote key {}"
+                  .format(image_name, album_node.name, album_image_uri))
+            Digikam.add_image_to_photosharing(conn_dk, cursor, dk_image_id, album_image_uri)
+
+        elif image_is_remote and remote_id_is_in_database:
+            err = "requested image {} is already in remote album {} and local " \
+                  "database, impossible".format(image_name, album_node.name)
+            raise ValueError(err)
+
+        elif not image_is_remote and remote_id_is_in_database:
+            # overwrite what’s in PhotoSharing
+            raise ValueError('tbd')
 
     DkSmug.sync_tags(Digikam(), cursor, conn_dk, connection)
 
