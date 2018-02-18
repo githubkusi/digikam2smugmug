@@ -211,9 +211,12 @@ def main():
 
         else:
             print("upload image {} to album {}".format(image_name, album_node.name))
-            response = connection.upload_image(file_path, album_node.uri)
-            assert response['stat'] == 'ok'
+            keywords = Digikam.get_tags(cursor, dk_image_id)
+            keywords = '; '.join(keywords)
+            response = connection.upload_image(file_path, album_node.uri, keywords=keywords)
+            assert response['stat'] == 'ok', response['message']
             Digikam.add_image_to_photosharing(conn_dk, cursor, dk_image_id, response["Image"]["AlbumImageUri"])
+
 
     DkSmug.sync_tags(Digikam(), cursor, conn_dk, connection)
 
