@@ -40,8 +40,7 @@ class Digikam:
         WHERE
             PhotoSharing.imageid IS NULL
             and ImageInformation.rating >= 1
-            AND UPPER(ImageInformation.format) in ('MOV', 'MPEG', 'AVI', 'WMV', 'GIF', 'PNG', 'JPG', 'MP4')
-            AND ImageInformation.creationDate > '2012-10-01 15:00:00'            
+            AND UPPER(ImageInformation.format) in ('MOV', 'MPEG', 'AVI', 'WMV', 'GIF', 'PNG', 'JPG', 'MP4')                        
             AND Images.status = 1
             AND Images.id not in(
                 SELECT
