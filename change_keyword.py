@@ -11,6 +11,8 @@ from datetime import datetime
 from json import dumps
 from requests import exceptions
 from smugmugv2py import Digikam, DkSmug
+import time
+from etaprogress.progress import ProgressBar
 import os
 
 
@@ -95,7 +97,14 @@ def main():
     print("Found {} unsynced images".format(dk_image_ids.__len__()))
 
     dks = DkSmug()
+
+    bar = ProgressBar(dk_image_ids.__len__())
+
     for dk_image_id in dk_image_ids:
+        # progress bar
+        bar.numerator = bar.numerator + 1
+        print(bar)
+
         album_url_path, image_name = Digikam.get_album_url_path_and_image_name(cursor, dk_image_id)
         if album_url_path is None:
             print("image id {} not found".format(dk_image_id))
