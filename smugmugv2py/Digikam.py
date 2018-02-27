@@ -81,12 +81,17 @@ class Digikam:
 
     @staticmethod
     def get_synched_image_ids(cursor):
-        query = "SELECT imageid FROM PhotoSharing"
+        # query = "SELECT imageid FROM PhotoSharing"
         query = """
-                SELECT p.imageid FROM PhotoSharing p
-                INNER JOIN ImageInformation i ON i.imageid = p.imageid
-                WHERE i.creationDate > '2018-01-01 15:00:00'
+                SELECT count(imageid) FROM PhotoSharing p
+                INNER JOIN Images i ON i.id = p.imageid
+                WHERE i.album is not NULL
                 """
+        # query = """
+        #         SELECT p.imageid FROM PhotoSharing p
+        #         INNER JOIN ImageInformation i ON i.imageid = p.imageid
+        #         WHERE i.creationDate > '2018-01-01 15:00:00'
+        #         """
         cursor.execute(query)
         rows = cursor.fetchall()
         image_ids = [x[0] for x in rows]
