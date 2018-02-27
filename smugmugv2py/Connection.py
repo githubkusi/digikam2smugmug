@@ -157,13 +157,14 @@ class Connection(object):
             header_auth=True).content.decode())
 
     def upload_image(self, filename, album_uri, caption=None, title=None, keywords=None):
+        x_smug_file_name = filename.encode('latin-1', 'ignore').decode()
         headers = {
             'User-Agent': self.__user_agent,
             'X-Smug-ResponseType': 'JSON',
             'X-Smug-Version': 'v2',
             'Content-Type': guess_type(filename)[0],
             'X-Smug-AlbumUri': album_uri,
-            'X-Smug-FileName': filename,
+            'X-Smug-FileName': x_smug_file_name,
             'Content-Length': str(path.getsize(filename)),
         }
 
