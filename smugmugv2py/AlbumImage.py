@@ -1,6 +1,10 @@
 from iso8601 import parse_date
 from .Image import Image
 
+# An AlbumImage only has methods OPTIONS, GET, DELETE
+# An Image has methods OPTIONS, GET, PATCH, DELETE
+# An AlbumImage cannot be used to make changes like setting keywords. You need the image for that
+
 
 class AlbumImage(object):
     def __init__(self, image):
