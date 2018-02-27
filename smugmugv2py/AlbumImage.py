@@ -28,6 +28,7 @@ class AlbumImage(object):
     @classmethod
     def get_album_image(cls, connection, album_image_uri):
         response, code = connection.get(album_image_uri)
+        assert code == 200, "failed to get album-image {}, error code {}".format(album_image_uri, code)
         return cls(response["AlbumImage"])
 
     def delete_album_image(self, connection):
