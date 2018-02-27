@@ -13,8 +13,13 @@ class Image(object):
         self.last_updated = parse_date(image["LastUpdated"]).replace(tzinfo=None)
 
     @classmethod
-    def from_album_image(cls, image):
-        image["Uri"] = image["Uris"]["Image"]
+    def from_album_image(cls, response):
+        response["Uri"] = response["Uris"]["Image"]
+        return cls(response)
+
+    @classmethod
+    def from_album_image_inst(cls, album_image):
+        image = {"Uri": album_image.image_uri}
         return cls(image)
 
     @classmethod
