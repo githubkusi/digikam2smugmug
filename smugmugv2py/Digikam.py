@@ -27,6 +27,24 @@ class Digikam:
         return res
 
     @staticmethod
+    def get_album_name(cursor, image_id):
+        """
+        :param cursor:
+        :param image_id:
+        :return: folder name, e.g. '20180208 Fasnacht'
+        """
+        query = """
+        select Albums.relativePath from Images, Albums 
+        where Images.id = {} and 
+        Albums.id = Images.album 
+        """.format(image_id)
+
+        cursor.execute(query)
+        res = cursor.fetchone()
+        assert res is not None
+        return os.path.basename(res[0])
+
+    @staticmethod
     def get_unsynced_image_ids(cursor):
         query = """
         SELECT
@@ -64,6 +82,11 @@ class Digikam:
     @staticmethod
     def get_synched_image_ids(cursor):
         query = "SELECT imageid FROM PhotoSharing"
+        query = """
+                SELECT p.imageid FROM PhotoSharing p
+                INNER JOIN ImageInformation i ON i.imageid = p.imageid
+                WHERE i.creationDate > '2018-01-01 15:00:00'
+                """
         cursor.execute(query)
         rows = cursor.fetchall()
         image_ids = [x[0] for x in rows]
@@ -79,6 +102,11 @@ class Digikam:
 
     @staticmethod
     def get_tags(cursor, image_id):
+        """
+        :param cursor:
+        :param image_id:
+        :return: tags as list of str
+        """
         query = "select id from Tags where name = \"_Digikam_Internal_Tags_\""
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -124,6 +152,24 @@ class Digikam:
         return keywords
 
     @staticmethod
+    def get_rating(cursor, image_id):
+        query = """
+                select rating from ImageInformation
+                where imageid = {}
+                """.format(image_id)
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        count = rows.__len__()
+        assert count <= 1
+        if count == 1:
+            return rows[0][0]
+        elif count == 0:
+            # not yet rated, treat as 0
+            return 0
+        else:
+            raise ValueError('{} ratings found for image_id {}'.format(count, image_id))
+
+    @staticmethod
     def get_remote_id(cursor, image_id):
         query = """
         select remoteid from PhotoSharing
@@ -145,11 +191,11 @@ class Digikam:
         conn_dk.commit()
 
     def get_local_tags_mtime(self, cursor, image_id):
-        '''
+        """
         :param cursor:
         :param image_id:
         :return: get youngest timestamp of all tags
-        '''
+        """
         internal_id = self.get_internal_tagid(cursor)
 
         query = """
@@ -157,6 +203,22 @@ class Digikam:
                 INNER JOIN Tags on Tags.id = ImageTags.tagid
                 WHERE imageid = {} and Tags.pid <> {}
                 """.format(image_id, internal_id)
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        assert rows.__len__() == 1
+        return rows[0][0]
+
+    @staticmethod
+    def get_local_rating_mtime(cursor, image_id):
+        """
+        :param cursor:
+        :param image_id:
+        :return: get timestamp of rating
+        """
+        query = """
+                SELECT mtime FROM ImageInformation
+                WHERE imageid = {}
+                """.format(image_id)
         cursor.execute(query)
         rows = cursor.fetchall()
         assert rows.__len__() == 1

@@ -75,15 +75,28 @@ class DkSmug:
         return connection.upload_image(file_path, album_node.uri)
 
     @staticmethod
-    def sync_tags(dk, cursor, conn_dk, connection):
+    def get_keywords(dk, cursor, image_id):
+        keywords = dk.get_tags(cursor, image_id)
+        rating = dk.get_rating(cursor, image_id)
+        album_name = dk.get_album_name(cursor, image_id)
+
+        keywords.append("Star{}".format(rating))
+        keywords.append(album_name)
+        return keywords
+
+    def sync_tags(self, dk, cursor, conn_dk, connection):
         dk_image_ids = dk.get_synched_image_ids(cursor)
         # dk_image_ids = [667587]
         for dk_image_id in dk_image_ids:
-            mtime_local = dk.get_local_tags_mtime(cursor, dk_image_id)
+            mtime_tags_local = dk.get_local_tags_mtime(cursor, dk_image_id)
             mtime_remote = dk.get_remote_tags_mtime(cursor, dk_image_id)
+            mtime_rating_local = dk.get_local_rating_mtime(cursor, dk_image_id)
 
-            if mtime_local is not None and mtime_local > mtime_remote:
-                keywords = dk.get_tags(cursor, dk_image_id)
+            has_outdated_tags = mtime_tags_local is not None and mtime_tags_local > mtime_remote
+            has_outdated_rating = mtime_rating_local is not None and mtime_rating_local > mtime_remote
+
+            if has_outdated_tags or has_outdated_rating:
+                keywords = self.get_keywords(dk, cursor, dk_image_id)
                 album_image_uri = dk.get_remote_id(cursor, dk_image_id)
                 album_image = AlbumImage.get_album_image(connection, album_image_uri)
                 image = album_image.get_image(connection)

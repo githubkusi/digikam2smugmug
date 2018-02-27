@@ -93,6 +93,10 @@ def main():
     conn_dk, cursor, root_path = real_collection()
     # conn_dk, cursor, root_path = debug_collection()
 
+    # a = "/share/Fotilis/2012/20120728 Hochzeit Landschi/Presentations/Martine à l'ENSIM.mov"
+    # a = "asdf'sddf.jpg"
+    # connection.upload_image(a, '/api/v2/album/7fVP8m')
+
     dk_image_ids = Digikam.get_unsynced_image_ids(cursor)
     print("Found {} unsynced images".format(dk_image_ids.__len__()))
 
@@ -152,7 +156,7 @@ def main():
             # overwrite what’s in PhotoSharing
             raise ValueError('tbd')
 
-    DkSmug.sync_tags(Digikam(), cursor, conn_dk, connection)
+    dks.sync_tags(Digikam(), cursor, conn_dk, connection)
 
 
 if __name__ == "__main__":
