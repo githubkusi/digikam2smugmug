@@ -97,6 +97,23 @@ class Digikam:
         image_ids = [x[0] for x in rows]
         return image_ids
 
+    def get_image_ids_with_unsynced_tags(self, cursor):
+        unsynched_image_ids = []
+        image_ids = self.get_synched_image_ids(cursor)
+        # image_ids = [667587]
+        for image_id in image_ids:
+            mtime_tags_local = self.get_local_tags_mtime(cursor, image_id)
+            mtime_remote = self.get_remote_tags_mtime(cursor, image_id)
+            mtime_rating_local = self.get_local_rating_mtime(cursor, image_id)
+
+            has_outdated_tags = mtime_tags_local is not None and mtime_tags_local > mtime_remote
+            has_outdated_rating = mtime_rating_local is not None and mtime_rating_local > mtime_remote
+
+            if has_outdated_tags or has_outdated_rating:
+                unsynched_image_ids.append(image_id)
+
+        return unsynched_image_ids
+
     @staticmethod
     def get_internal_tagid(cursor):
         query = "select id from Tags where name = \"_Digikam_Internal_Tags_\""

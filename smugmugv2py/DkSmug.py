@@ -4,6 +4,8 @@ import glob
 from .Album import Album
 from .AlbumImage import AlbumImage
 from .Node import Node
+from .Image import Image
+from etaprogress.progress import ProgressBar
 
 
 class DkSmug:
@@ -85,21 +87,25 @@ class DkSmug:
         return keywords
 
     def sync_tags(self, dk, cursor, conn_dk, connection):
-        dk_image_ids = dk.get_synched_image_ids(cursor)
-        # dk_image_ids = [667587]
+        dk_image_ids = dk.get_image_ids_with_unsynced_tags(cursor)
+        bar = ProgressBar(dk_image_ids.__len__())
+
+        # dk_image_ids = [419792]
         for dk_image_id in dk_image_ids:
-            mtime_tags_local = dk.get_local_tags_mtime(cursor, dk_image_id)
-            mtime_remote = dk.get_remote_tags_mtime(cursor, dk_image_id)
-            mtime_rating_local = dk.get_local_rating_mtime(cursor, dk_image_id)
+            # progress bar
+            bar.numerator = bar.numerator + 1
+            print(bar)
 
-            has_outdated_tags = mtime_tags_local is not None and mtime_tags_local > mtime_remote
-            has_outdated_rating = mtime_rating_local is not None and mtime_rating_local > mtime_remote
+            keywords = self.get_keywords(dk, cursor, dk_image_id)
+            album_image_uri = dk.get_remote_id(cursor, dk_image_id)
+            album_image = AlbumImage.get_album_image(connection, album_image_uri)
 
-            if has_outdated_tags or has_outdated_rating:
-                keywords = self.get_keywords(dk, cursor, dk_image_id)
-                album_image_uri = dk.get_remote_id(cursor, dk_image_id)
-                album_image = AlbumImage.get_album_image(connection, album_image_uri)
-                image = album_image.get_image(connection)
-                print("set keywords on " + image.filename, keywords)
-                image.set_keywords(connection, keywords)
-                dk.update_mtime_tags(conn_dk, cursor, dk_image_id)
+            # image = Image.from_album_image_inst(album_image)
+            # image = album_image.get_image(connection)
+            print("set keywords on " + album_image.filename, keywords)
+            # image.set_keywords(connection, keywords)
+
+            connection.patch(album_image.image_uri, {"KeywordArray": keywords})
+
+            dk.update_mtime_tags(conn_dk, cursor, dk_image_id)
+
