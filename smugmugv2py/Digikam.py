@@ -83,7 +83,7 @@ class Digikam:
     def get_synched_image_ids(cursor):
         # query = "SELECT imageid FROM PhotoSharing"
         query = """
-                SELECT count(imageid) FROM PhotoSharing p
+                SELECT imageid FROM PhotoSharing p
                 INNER JOIN Images i ON i.id = p.imageid
                 WHERE i.album is not NULL
                 """
