@@ -1,6 +1,7 @@
 import MySQLdb as Mdb
 import os
 
+
 class Digikam:
     def __init__(self):
         self.bla = 'hello'

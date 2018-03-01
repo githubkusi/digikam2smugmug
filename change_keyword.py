@@ -100,6 +100,7 @@ def main():
     dk_image_ids = Digikam.get_unsynced_image_ids(cursor)
     print("Found {} unsynced images".format(dk_image_ids.__len__()))
 
+    dk = Digikam()
     dks = DkSmug()
 
     bar = ProgressBar(dk_image_ids.__len__())
@@ -109,7 +110,7 @@ def main():
         bar.numerator = bar.numerator + 1
         print(bar)
 
-        album_url_path, image_name = Digikam.get_album_url_path_and_image_name(cursor, dk_image_id)
+        album_url_path, image_name = dk.get_album_url_path_and_image_name(cursor, dk_image_id)
         if album_url_path is None:
             print("image id {} not found".format(dk_image_id))
             continue
@@ -133,7 +134,7 @@ def main():
         if not image_is_remote and not remote_id_is_in_database:
             # normal case: upload
             print("upload image {} to album {}".format(image_name, album_node.name))
-            keywords = Digikam.get_tags(cursor, dk_image_id)
+            keywords = dks.get_keywords(dk, cursor, dk_image_id)
             keywords = '; '.join(keywords)
             response = connection.upload_image(file_path, album_node.uri, keywords=keywords)
             assert response['stat'] == 'ok', response['message']

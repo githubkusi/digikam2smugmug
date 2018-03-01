@@ -82,7 +82,10 @@ class DkSmug:
         rating = dk.get_rating(cursor, image_id)
         album_name = dk.get_album_name(cursor, image_id)
 
-        keywords.append("Star{}".format(rating))
+        # For an image with 3 stars, add Star1/2/3
+        for i in range(1, rating + 1):
+            keywords.append("Star{}".format(i))
+
         keywords.append(album_name)
         return keywords
 
@@ -98,14 +101,18 @@ class DkSmug:
 
             keywords = self.get_keywords(dk, cursor, dk_image_id)
             album_image_uri = dk.get_remote_id(cursor, dk_image_id)
-            album_image = AlbumImage.get_album_image(connection, album_image_uri)
+            # album_image = AlbumImage.get_album_image(connection, album_image_uri)
+            # image_uri = album_image.image_uri
+
+            a = album_image_uri.split('/')
+            image_uri = '/api/v2/image/' + a[-1]
 
             # image = Image.from_album_image_inst(album_image)
             # image = album_image.get_image(connection)
-            print("set keywords on " + album_image.filename, keywords)
+            print("set keywords on " + image_uri, keywords)
             # image.set_keywords(connection, keywords)
 
-            connection.patch(album_image.image_uri, {"KeywordArray": keywords})
+            connection.patch(image_uri, {"KeywordArray": keywords})
 
             dk.update_mtime_tags(conn_dk, cursor, dk_image_id)
 
