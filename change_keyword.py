@@ -17,7 +17,6 @@ import os
 
 
 def get_authorized_connection(api_key, api_secret, token, secret):
-
     if not api_key or not api_secret:
         raise Exception('API key and secret are required. see test_setup.py')
 
@@ -53,7 +52,6 @@ def get_root_node(conn):
 
 
 def get_node(connection, root_node, name):
-
     for node in root_node.get_children(connection):
         if node.url_name == name:
             return node
@@ -86,12 +84,27 @@ def debug_collection():
     return conn_dk, cursor, root_path
 
 
+def read_ignore_file(root_path):
+    fname = '.smugmug-exclude'
+    fpath = os.path.join(root_path, fname)
+
+    if not os.path.exists(fpath):
+        return None
+
+    with open(fpath) as f:
+        content = f.readlines()
+
+    return [x.strip() for x in content]
+
+
 def main():
     connection = get_authorized_connection(api_key, api_secret, token, secret)
     dk_node = get_digikam_node(connection)
 
     conn_dk, cursor, root_path = real_collection()
     # conn_dk, cursor, root_path = debug_collection()
+
+    ignored_paths = read_ignore_file(root_path)
 
     # a = "/share/Fotilis/2012/20120728 Hochzeit Landschi/Presentations/Martine à l'ENSIM.mov"
     # a = "asdf'sddf.jpg"
@@ -111,6 +124,17 @@ def main():
         print(bar)
 
         album_url_path, image_name = dk.get_album_url_path_and_image_name(cursor, dk_image_id)
+
+        # check if user wants to ignore this image
+        ignore = False
+        for ignored_path in ignored_paths:
+            if album_url_path.startswith(ignored_path):
+                ignore = True
+
+        if ignore:
+            print("user ignores " + album_url_path)
+            continue
+
         if album_url_path is None:
             print("image id {} not found".format(dk_image_id))
             continue
@@ -118,6 +142,7 @@ def main():
 
         # check validity of structure
         parent_folder_path, album_name = path.split(album_url_path)
+        print(album_name)
         if dks.folder_contains_media_files(root_path, parent_folder_path.strip(os.sep)):
             print("<{}>: <{}> is an invalid album since there are media files in <{}>"
                   .format(image_name, album_name, parent_folder_path))
