@@ -127,13 +127,14 @@ def main():
 
         # check if user wants to ignore this image
         ignore = False
-        for ignored_path in ignored_paths:
-            if album_url_path.startswith(ignored_path):
-                ignore = True
+        if ignored_paths is not None:
+            for ignored_path in ignored_paths:
+                if album_url_path.startswith(ignored_path):
+                    ignore = True
 
-        if ignore:
-            print("user ignores " + album_url_path)
-            continue
+            if ignore:
+                print("user ignores " + album_url_path)
+                continue
 
         if album_url_path is None:
             print("image id {} not found".format(dk_image_id))
