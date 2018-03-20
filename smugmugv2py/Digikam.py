@@ -142,24 +142,25 @@ class Digikam:
         assert rows.__len__() == 1, "mysql: root dk tag not found"
         rid = rows[0][0]
 
+        # Query for tags including parent tags
         query = """
         select t1.name
         from Tags t1
         inner join ImageTags on ImageTags.tagid = t1.id
-        where ImageTags.imageid = {} and t1.pid <> {} and t1.id <> {} and t1.id <> {}
+        where ImageTags.imageid = {image} and t1.pid <> {internal_tag} and t1.id <> {internal_tag} and t1.id <> {root_tag}
         union all
         select t2.name
         from Tags t1
         left join Tags t2 on t2.id=t1.pid
         inner join ImageTags on ImageTags.tagid = t1.id
-        where ImageTags.imageid = {} and t2.pid <> {} and t2.id <> {} and t2.id <> {}
+        where ImageTags.imageid = {image} and t2.pid <> {internal_tag} and t2.id <> {internal_tag} and t2.id <> {root_tag}
         union all
         select t3.name
         from Tags t1
         left join Tags t2 on t2.id=t1.pid
         left join Tags t3 on t3.id=t2.pid
         inner join ImageTags on ImageTags.tagid = t1.id
-        where ImageTags.imageid = {} and t3.pid <> {} and t3.id <> {} and t3.id <> {}
+        where ImageTags.imageid = {image} and t3.pid <> {internal_tag} and t3.id <> {internal_tag} and t3.id <> {root_tag}
         union all
         select t4.name
         from Tags t1
@@ -167,8 +168,16 @@ class Digikam:
         left join Tags t3 on t3.id=t2.pid
         left join Tags t4 on t4.id=t3.pid
         inner join ImageTags on ImageTags.tagid = t1.id
-        where ImageTags.imageid = {} and t4.pid <> {} and t4.id <> {} and t4.id <> {}
-        """.format(image_id, iid, iid, rid, image_id, iid, iid, rid, image_id, iid, iid, rid, image_id, iid, iid, rid)
+        where ImageTags.imageid = {image} and t4.pid <> {internal_tag} and t4.id <> {internal_tag} and t4.id <> {root_tag}
+        """.format(image=image_id, internal_tag=iid, root_tag=rid)
+
+        # Query for tags without parent tags
+        query = """
+        select t1.name
+        from Tags t1
+        inner join ImageTags on ImageTags.tagid = t1.id
+        where ImageTags.imageid = {image} and t1.pid <> {internal_tag} and t1.id <> {internal_tag} and t1.id <> {root_tag}        
+        """.format(image=image_id, internal_tag=iid, root_tag=rid)
         cursor.execute(query)
         rows = cursor.fetchall()
         keywords = [x[0] for x in rows]  # (('blue',), ('Lifesaver',))
