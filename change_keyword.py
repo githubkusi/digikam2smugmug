@@ -64,24 +64,23 @@ def get_digikam_node(connection):
     return get_node(connection, root_node, 'Digikam')
 
 
-def real_collection():
-    conn_dk, cursor = Digikam.get_connection_and_cursor(
+def real_collection(dk):
+    conn_dk, cursor = dk.get_connection_and_cursor(
         user='digikamuser',
         passwd='digipassi',
         db='digikamdb')
 
-    root_path = '/share/Fotilis'
-    return conn_dk, cursor, root_path
+    return conn_dk, cursor
 
 
-def debug_collection():
-    conn_dk, cursor = Digikam.get_connection_and_cursor(
+def debug_collection(dk):
+    conn_dk, cursor = dk.get_connection_and_cursor(
         user='dkuser',
         passwd='dkpasswd',
         db='digikam_devel_core')
 
     root_path = '/tmp/digikam-debug-pics'
-    return conn_dk, cursor, root_path
+    return conn_dk, cursor
 
 
 def read_ignore_file(root_path):
@@ -101,8 +100,12 @@ def main():
     connection = get_authorized_connection(api_key, api_secret, token, secret)
     dk_node = get_digikam_node(connection)
 
-    conn_dk, cursor, root_path = real_collection()
-    # conn_dk, cursor, root_path = debug_collection()
+    dk = Digikam()
+    dks = DkSmug()
+
+    conn_dk, cursor = real_collection(dk)
+    root_path = dk.get_root_path(cursor)
+    # conn_dk, cursor = debug_collection()
 
     ignored_paths = read_ignore_file(root_path)
 
@@ -113,8 +116,6 @@ def main():
     dk_image_ids = Digikam.get_unsynced_image_ids(cursor)
     print("Found {} unsynced images".format(dk_image_ids.__len__()))
 
-    dk = Digikam()
-    dks = DkSmug()
 
     bar = ProgressBar(dk_image_ids.__len__())
 
@@ -155,7 +156,7 @@ def main():
 
         image_is_remote = album_image_uri is not None
         remote_id_is_in_database = image_is_remote and Digikam.is_image_in_photosharing(
-            conn_dk, cursor, album_image_uri)
+            cursor, album_image_uri)
 
         if not image_is_remote and not remote_id_is_in_database:
             # normal case: upload

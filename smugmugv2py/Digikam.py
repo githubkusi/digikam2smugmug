@@ -289,7 +289,7 @@ class Digikam:
         return cursor.fetchone()
 
     @staticmethod
-    def is_image_in_photosharing(conn_dk, cursor, remote_id):
+    def is_image_in_photosharing(cursor, remote_id):
         query = """
                 SELECT imageid FROM PhotoSharing
                 WHERE remoteid = "{}";
@@ -297,5 +297,18 @@ class Digikam:
         cursor.execute(query)
         rows = cursor.fetchall()
         return rows.__len__() > 0
+
+    @staticmethod
+    def get_root_path(cursor):
+        query = """
+                SELECT type, identifier FROM AlbumRoots
+        """
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        assert rows.__len__() == 1, "Only one album root supported but you have {}".format(rows.__len__())
+        assert rows[0][0] == 3, "Only network shares are supported"
+        identifier = rows[0][1]
+        return identifier.split("networkshareid:?mountpath=", 1)[1]
+
 
 
