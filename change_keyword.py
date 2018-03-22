@@ -14,6 +14,7 @@ from smugmugv2py import Digikam, DkSmug
 import time
 from etaprogress.progress import ProgressBar
 import os
+import argparse
 
 
 def get_authorized_connection(api_key, api_secret, token, secret):
@@ -64,25 +65,6 @@ def get_digikam_node(connection):
     return get_node(connection, root_node, 'Digikam')
 
 
-def real_collection(dk):
-    conn_dk, cursor = dk.get_connection_and_cursor(
-        user='digikamuser',
-        passwd='digipassi',
-        db='digikamdb')
-
-    return conn_dk, cursor
-
-
-def debug_collection(dk):
-    conn_dk, cursor = dk.get_connection_and_cursor(
-        user='dkuser',
-        passwd='dkpasswd',
-        db='digikam_devel_core')
-
-    root_path = '/tmp/digikam-debug-pics'
-    return conn_dk, cursor
-
-
 def read_ignore_file(root_path):
     file_name = '.smugmug-exclude'
     file_path = os.path.join(root_path, file_name)
@@ -96,6 +78,16 @@ def read_ignore_file(root_path):
     return [x.strip() for x in content]
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Digikam-to-SmugMug Uploader")
+    parser.add_argument('-u', '--user', dest='user', required=True)
+    parser.add_argument('-p', '--password', dest='passwd', required=True)
+    parser.add_argument('-d', '--database', dest='database', required=True)
+    args = parser.parse_args()
+
+    return args.user, args.passwd, args.database
+
+
 def main():
     connection = get_authorized_connection(api_key, api_secret, token, secret)
     dk_node = get_digikam_node(connection)
@@ -103,9 +95,11 @@ def main():
     dk = Digikam()
     dks = DkSmug()
 
-    conn_dk, cursor = real_collection(dk)
+    user, password, database = parse_args()
+    conn_dk, cursor = dk.get_connection_and_cursor(
+        user, password, database)
+
     root_path = dk.get_root_path(cursor)
-    # conn_dk, cursor = debug_collection()
 
     ignored_paths = read_ignore_file(root_path)
 
@@ -115,7 +109,6 @@ def main():
 
     dk_image_ids = Digikam.get_unsynced_image_ids(cursor)
     print("Found {} unsynced images".format(dk_image_ids.__len__()))
-
 
     bar = ProgressBar(dk_image_ids.__len__())
 
