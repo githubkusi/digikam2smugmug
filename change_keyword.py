@@ -84,13 +84,13 @@ def debug_collection(dk):
 
 
 def read_ignore_file(root_path):
-    fname = '.smugmug-exclude'
-    fpath = os.path.join(root_path, fname)
+    file_name = '.smugmug-exclude'
+    file_path = os.path.join(root_path, file_name)
 
-    if not os.path.exists(fpath):
+    if not os.path.exists(file_path):
         return None
 
-    with open(fpath) as f:
+    with open(file_path) as f:
         content = f.readlines()
 
     return [x.strip() for x in content]
