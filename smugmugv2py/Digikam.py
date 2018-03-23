@@ -71,7 +71,7 @@ class Digikam:
                 INNER JOIN Tags ON
                     Tags.id = ImageTags.tagid
                 WHERE
-                    Tags.name = "nosync"
+                    Tags.name = "SmugmugNoSync"
             )
         """
         # AND ImageInformation.creationDate > '2017-10-01 15:00:00'
