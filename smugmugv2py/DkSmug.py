@@ -86,6 +86,9 @@ class DkSmug:
         for i in range(1, rating + 1):
             keywords.append("Star{}".format(i))
 
+        # Check for encoding issues
+        assert album_name.find('\u0308') < 0, 'umlaut consists of a and ¨ instead of a single ä'
+
         keywords.append(album_name)
         return keywords
 
