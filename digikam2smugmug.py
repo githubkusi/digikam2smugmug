@@ -60,9 +60,9 @@ def get_node(connection, root_node, name):
     raise ValueError(name + ' not found')
 
 
-def get_digikam_node(connection):
+def get_digikam_node(connection, digikam_node):
     root_node = get_root_node(connection)
-    return get_node(connection, root_node, 'Digikam')
+    return get_node(connection, root_node, digikam_node)
 
 
 def read_ignore_file(root_path):
@@ -83,19 +83,21 @@ def parse_args():
     parser.add_argument('-u', '--user', dest='user', required=True)
     parser.add_argument('-p', '--password', dest='passwd', required=True)
     parser.add_argument('-d', '--database', dest='database', required=True)
+    parser.add_argument('-r', '--digikamnode', dest='digikam_node', required=False, default='Digikam')
     args = parser.parse_args()
 
-    return args.user, args.passwd, args.database
+    return args.user, args.passwd, args.database, args.digikam_node
 
 
 def main():
+    user, password, database, digikam_node = parse_args()
+
     connection = get_authorized_connection(api_key, api_secret, token, secret)
-    dk_node = get_digikam_node(connection)
+    dk_node = get_digikam_node(connection, digikam_node)
 
     dk = Digikam()
     dks = DkSmug()
 
-    user, password, database = parse_args()
     conn_dk, cursor = dk.get_connection_and_cursor(
         user, password, database)
 
