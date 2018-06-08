@@ -83,7 +83,8 @@ class Connection(object):
         attempt = 0
         while True:
             try:
-                print("Get, attempt: " + str(attempt))
+                if attempt > 0:
+                    print("Get, attempt: " + str(attempt))
                 response = loads(self.__SESSION.get(
                     self.__API_ORIGIN + uri,
                     headers={
