@@ -12,3 +12,7 @@ Install the freshest version
 Install it in dev mode:
 
     python setup.py develop
+
+# Python 3 caveats
+
+You need to apply this PRQ https://github.com/litl/rauth/pull/201 to rauth in order to make rauth work with python3    
