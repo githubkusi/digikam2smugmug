@@ -75,7 +75,12 @@ def read_ignore_file(root_path):
     with open(file_path) as f:
         content = f.readlines()
 
-    return [x.strip() for x in content]
+    # remove newline
+    content = [x.strip() for x in content]
+
+    # remove empty lines (which are now empty strings)
+    content = list(filter(None, content))
+    return content
 
 
 def parse_args():
