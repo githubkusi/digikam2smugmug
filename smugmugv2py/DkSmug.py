@@ -38,7 +38,7 @@ class DkSmug:
         album_node = node.find_node_by_name(connection, album_name)
         if album_node is None:
             print("create album " + album_name + " in folder " + node.url_path)
-            album_node = node.create_child_album(connection, name=album_name, url=None, privacy='Private')
+            album_node = node.create_child_album(connection, name=album_name, url=None, privacy='Unlisted')
 
         return Album.get_album(connection, album_node.album_uri)
 
