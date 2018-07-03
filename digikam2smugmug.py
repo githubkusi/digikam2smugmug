@@ -150,7 +150,10 @@ def main():
                   .format(image_name, album_name, parent_folder_path))
             continue
 
-        album_node = dks.get_or_create_album_from_album_path(connection, dk_node, album_url_path)
+        # convert 20180701 to 18-07 for smugmug
+        album_url_path_sm = dks.shorten_date(album_url_path)
+
+        album_node = dks.get_or_create_album_from_album_path(connection, dk_node, album_url_path_sm)
 
         album_image_uri = dks.get_album_image_uri_from_name(image_name, connection, album_node)
 

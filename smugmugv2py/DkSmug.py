@@ -1,6 +1,7 @@
 from os import path
 import os
 import glob
+import re
 from .Album import Album
 from .AlbumImage import AlbumImage
 from .Node import Node
@@ -11,6 +12,14 @@ from etaprogress.progress import ProgressBar
 class DkSmug:
     def __init__(self):
         self.bla = 'hello'
+
+    @staticmethod
+    def shorten_date(album_url_path):
+        # convert 20180701 to 18-07
+        return re.sub(
+            r'[12]\d(\d\d)(\d\d)\d\d ',
+            r'\1-\2 ',
+            album_url_path)
 
     @staticmethod
     def get_or_create_node_from_folder_path(connection, node, folder_path):
