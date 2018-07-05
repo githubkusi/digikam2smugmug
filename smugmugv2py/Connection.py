@@ -144,6 +144,7 @@ class Connection(object):
             data=None).content)
 
     def patch(self, uri, data):
+        # example: connection.patch(album_uri, {"Share": true})
         headers = {
             'User-Agent': self.__user_agent,
             'Accept': 'application/json',
