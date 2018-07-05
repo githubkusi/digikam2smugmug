@@ -169,3 +169,15 @@ class Node(object):
                 return node
 
         return None
+
+    def find_all_albums(self, connection):
+        albums = []
+        for node in self.get_children(connection):
+            if node.type == "Folder":
+                print('enter ' + node.name)
+                albums.extend(node.find_all_albums(connection))
+
+            elif node.type == "Album":
+                albums.append(node.album_uri)
+
+        return albums
