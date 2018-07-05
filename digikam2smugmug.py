@@ -94,6 +94,24 @@ def parse_args():
     return args.user, args.passwd, args.database, args.digikam_node
 
 
+def shorten_album_name():
+    # rename albums
+    # mynode = Node.get_node(connection, '/api/v2/node/3Xgpkt')
+    albums = dk_node.find_all_albums(connection)
+    for album_uri in albums:
+        album = Album.get_album(connection, album_uri)
+        new_name = dks.shorten_date(album.name)
+        if album.name == new_name:
+            print('skipping ' + album.name)
+            continue
+
+        else:
+            print('{} -> {}'.format(album.name, new_name))
+            album.set_name(connection, new_name)
+
+    return
+
+
 def main():
     user, password, database, digikam_node = parse_args()
 
