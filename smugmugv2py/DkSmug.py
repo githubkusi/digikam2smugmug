@@ -36,7 +36,7 @@ class DkSmug:
                 node = node.create_child_folder(connection, folder_name, None, 'Private')
             else:
                 # Folder exists, use child node
-                print("use existing folder " + folder_name)
+                # print("use existing folder " + folder_name)
                 node = child_node
 
         return node
@@ -44,10 +44,16 @@ class DkSmug:
     @staticmethod
     def get_or_create_album_from_album_name(connection, node_uri, album_name):
         node = Node.get_node(connection, node_uri)
-        album_node = node.find_node_by_name(connection, album_name)
+
+        # shorten album name such that it's better visible on a smart phone. Keep full date for url
+        # e.g 20180701 to 18-07 for smugmug
+        album_name_shortened = DkSmug.shorten_date(album_name)
+
+        album_node = node.find_node_by_name(connection, album_name_shortened)
         if album_node is None:
-            print("create album " + album_name + " in folder " + node.url_path)
+            print("create album " + album_name_shortened + " in folder " + node.url_path)
             album_node = node.create_child_album(connection, name=album_name, url=None, privacy='Unlisted')
+            album_node = album_node.set_name(connection, album_name_shortened)
 
         return Album.get_album(connection, album_node.album_uri)
 

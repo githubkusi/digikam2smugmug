@@ -168,11 +168,7 @@ def main():
                   .format(image_name, album_name, parent_folder_path))
             continue
 
-        # convert 20180701 to 18-07 for smugmug
-        album_url_path_sm = dks.shorten_date(album_url_path)
-
-        album_node = dks.get_or_create_album_from_album_path(connection, dk_node, album_url_path_sm)
-
+        album_node = dks.get_or_create_album_from_album_path(connection, dk_node, album_url_path)
         album_image_uri = dks.get_album_image_uri_from_name(image_name, connection, album_node)
 
         image_is_remote = album_image_uri is not None
@@ -206,7 +202,7 @@ def main():
             raise ValueError('tbd')
 
     dks.sync_tags(Digikam(), cursor, conn_dk, connection)
-
+    print('done')
 
 if __name__ == "__main__":
     main()
