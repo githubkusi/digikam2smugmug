@@ -181,3 +181,6 @@ class Node(object):
                 albums.append(node.album_uri)
 
         return albums
+
+    def set_name(self, connection, new_name):
+        return Node(self.change_node(connection, {"Name": new_name}))

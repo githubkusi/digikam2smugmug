@@ -49,3 +49,6 @@ class Album(object):
 
     def change_album(self, connection, changes):
         return connection.patch(self.uri, changes)["Response"]["Album"]
+
+    def set_name(self, connection, new_name):
+        return Album(self.change_album(connection, {"Name": new_name}))
