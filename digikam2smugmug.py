@@ -162,7 +162,7 @@ def main():
 
         # check validity of structure
         parent_folder_path, album_name = path.split(album_url_path)
-        print(album_name)
+
         if dks.folder_contains_media_files(root_path, parent_folder_path.strip(os.sep)):
             print("<{}>: <{}> is an invalid album since there are media files in <{}>"
                   .format(image_name, album_name, parent_folder_path))
