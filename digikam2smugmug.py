@@ -15,6 +15,7 @@ import time
 from etaprogress.progress import ProgressBar
 import os
 import argparse
+import configparser
 
 
 def get_authorized_connection(api_key, api_secret, token, secret):
@@ -65,22 +66,20 @@ def get_digikam_node(connection, digikam_node):
     return get_node(connection, root_node, digikam_node)
 
 
-def read_ignore_file(root_path):
+def parse_exclude_file(root_path):
     file_name = '.smugmug-exclude'
     file_path = os.path.join(root_path, file_name)
 
     if not os.path.exists(file_path):
         return None
 
-    with open(file_path) as f:
-        content = f.readlines()
+    parser = configparser.ConfigParser(allow_no_value=True)
+    parser.read(file_path)
+    exclude_paths = {ep for ep in parser['exclude paths'].keys()}
+    exclude_tags = {et for et in parser['exclude tags'].keys()}
+    exclude_files_with_tags = {et for et in parser['exclude files with tags'].keys()}
 
-    # remove newline
-    content = [x.strip() for x in content]
-
-    # remove empty lines (which are now empty strings)
-    content = list(filter(None, content))
-    return content
+    return exclude_paths, exclude_tags, exclude_files_with_tags
 
 
 def parse_args():
@@ -126,7 +125,7 @@ def main():
 
     root_path = dk.get_root_path(cursor)
 
-    ignored_paths = read_ignore_file(root_path)
+    exclude_paths, exclude_tags, exclude_files_with_tags = parse_exclude_file(root_path)
 
     # a = "/share/Fotilis/2012/20120728 Hochzeit Landschi/Presentations/Martine à l'ENSIM.mov"
     # a = "asdf'sddf.jpg"
@@ -146,14 +145,20 @@ def main():
 
         # check if user wants to ignore this image
         ignore = False
-        if ignored_paths is not None:
-            for ignored_path in ignored_paths:
-                if album_url_path.startswith(ignored_path):
+        if exclude_paths is not None:
+            for exclude_path in exclude_paths:
+                if album_url_path.startswith(exclude_path):
                     ignore = True
 
             if ignore:
                 print("user ignores " + album_url_path)
                 continue
+
+        keywords = dks.get_keywords(dk, cursor, dk_image_id)
+        t = set(keywords).intersection(exclude_files_with_tags)
+        if t:
+            print("exclude image {} due to tag {}".format(image_name, t))
+            continue
 
         if album_url_path is None:
             print("image id {} not found".format(dk_image_id))
@@ -178,9 +183,8 @@ def main():
         if not image_is_remote and not remote_id_is_in_database:
             # normal case: upload
             print("upload image {} to album {}".format(image_name, album_node.name))
-            keywords = dks.get_keywords(dk, cursor, dk_image_id)
-            keywords = '; '.join(keywords)
-            response = connection.upload_image(file_path, album_node.uri, keywords=keywords)
+            keywords_str = '; '.join(keywords)
+            response = connection.upload_image(file_path, album_node.uri, keywords=keywords_str)
             assert response['stat'] == 'ok', response['message']
             Digikam.add_image_to_photosharing(conn_dk, cursor, dk_image_id, response["Image"]["AlbumImageUri"])
 
@@ -201,7 +205,7 @@ def main():
             # overwrite what’s in PhotoSharing
             raise ValueError('tbd')
 
-    dks.sync_tags(Digikam(), cursor, conn_dk, connection)
+    dks.sync_tags(Digikam(), cursor, conn_dk, connection, exclude_tags)
     print('done')
 
 if __name__ == "__main__":

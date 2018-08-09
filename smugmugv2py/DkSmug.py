@@ -107,7 +107,7 @@ class DkSmug:
         keywords.append(album_name)
         return keywords
 
-    def sync_tags(self, dk, cursor, conn_dk, connection):
+    def sync_tags(self, dk, cursor, conn_dk, connection, exclude_tags):
         print("find images with unsynched tags")
         dk_image_ids = dk.get_image_ids_with_unsynced_tags(cursor)
         bar = ProgressBar(dk_image_ids.__len__())
@@ -119,6 +119,10 @@ class DkSmug:
             print(bar)
 
             keywords = self.get_keywords(dk, cursor, dk_image_id)
+
+            # breaks ordering
+            keywords = set(keywords) - exclude_tags
+
             album_image_uri = dk.get_remote_id(cursor, dk_image_id)
             # album_image = AlbumImage.get_album_image(connection, album_image_uri)
             # image_uri = album_image.image_uri
