@@ -74,6 +74,7 @@ def parse_exclude_file(root_path):
         return None
 
     parser = configparser.ConfigParser(allow_no_value=True)
+    parser.optionxform = lambda option: option
     parser.read(file_path)
     exclude_paths = {ep for ep in parser['exclude paths'].keys()}
     exclude_tags = {et for et in parser['exclude tags'].keys()}
