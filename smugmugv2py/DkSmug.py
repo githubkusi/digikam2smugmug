@@ -121,7 +121,7 @@ class DkSmug:
             keywords = self.get_keywords(dk, cursor, dk_image_id)
 
             # breaks ordering
-            keywords = set(keywords) - exclude_tags
+            keywords = list(set(keywords) - exclude_tags)
 
             album_image_uri = dk.get_remote_id(cursor, dk_image_id)
             # album_image = AlbumImage.get_album_image(connection, album_image_uri)
