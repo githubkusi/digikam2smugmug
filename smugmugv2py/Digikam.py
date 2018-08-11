@@ -1,5 +1,6 @@
 import MySQLdb as Mdb
 import os
+from etaprogress.progress import ProgressBar
 
 
 class Digikam:
@@ -102,7 +103,18 @@ class Digikam:
         unsynched_image_ids = []
         image_ids = self.get_synched_image_ids(cursor)
         # image_ids = [667587]
+
+        num_images = image_ids.__len__()
+        delta = round(num_images / 55)
+        i = 0
+        bar = ProgressBar(num_images)
+
         for image_id in image_ids:
+            i = i + 1
+            if i % delta == 0:
+                bar.numerator = bar.numerator + delta
+                print(bar, end='', flush=True)
+
             mtime_tags_local = self.get_local_tags_mtime(cursor, image_id)
             mtime_remote = self.get_remote_tags_mtime(cursor, image_id)
             mtime_rating_local = self.get_local_rating_mtime(cursor, image_id)
@@ -112,6 +124,9 @@ class Digikam:
 
             if has_outdated_tags or has_outdated_rating:
                 unsynched_image_ids.append(image_id)
+
+        bar.numerator = num_images
+        print(bar)
 
         return unsynched_image_ids
 
