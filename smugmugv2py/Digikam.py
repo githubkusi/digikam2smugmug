@@ -113,7 +113,7 @@ class Digikam:
             i = i + 1
             if i % delta == 0:
                 bar.numerator = bar.numerator + delta
-                print(bar, end='', flush=True)
+                print(bar, end='\r', flush=True)
 
             mtime_tags_local = self.get_local_tags_mtime(cursor, image_id)
             mtime_remote = self.get_remote_tags_mtime(cursor, image_id)
