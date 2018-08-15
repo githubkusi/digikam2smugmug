@@ -142,6 +142,7 @@ def main():
         bar.numerator = bar.numerator + 1
         print(bar)
 
+        # album_url_path = '/2012/20120101/Event'
         album_url_path, image_name = dk.get_album_url_path_and_image_name(cursor, dk_image_id)
 
         # check if user wants to ignore this image
