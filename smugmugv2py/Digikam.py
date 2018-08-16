@@ -15,17 +15,26 @@ class Digikam:
         return con, cursor
 
     @staticmethod
-    def get_album_url_path_and_image_name(cursor, image_id):
+    def get_album_url_path_and_image_name_and_rating(cursor, image_id):
         query = """
-        select Albums.relativePath, Images.name from Images, Albums 
-        where Images.id = {} and 
-        Albums.id = Images.album 
+        select
+            Albums.relativePath,
+            Images.name,
+            ImageInformation.rating
+        from
+            Images
+        INNER JOIN ImageInformation ON
+            ImageInformation.imageid = Images.id 
+        inner join Albums ON
+            Albums.id = Images.album
+        where
+            Images.id = {}
         """.format(image_id)
 
         cursor.execute(query)
         res = cursor.fetchone()
         if res is None:
-            return None, None
+            return None, None, None
         return res
 
     @staticmethod

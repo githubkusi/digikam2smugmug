@@ -79,8 +79,10 @@ def parse_exclude_file(root_path):
     exclude_paths = {ep for ep in parser['exclude paths'].keys()}
     exclude_tags = {et for et in parser['exclude tags'].keys()}
     exclude_files_with_tags = {et for et in parser['exclude files with tags'].keys()}
+    d = dict(parser['minimal rating'])
+    minimal_rating = dict([k, int(v)] for k, v in d.items())
 
-    return exclude_paths, exclude_tags, exclude_files_with_tags
+    return exclude_paths, exclude_tags, exclude_files_with_tags, minimal_rating
 
 
 def parse_args():
@@ -126,7 +128,7 @@ def main():
 
     root_path = dk.get_root_path(cursor)
 
-    exclude_paths, exclude_tags, exclude_files_with_tags = parse_exclude_file(root_path)
+    exclude_paths, exclude_tags, exclude_files_with_tags, minimal_rating = parse_exclude_file(root_path)
 
     # a = "/share/Fotilis/2012/20120728 Hochzeit Landschi/Presentations/Martine à l'ENSIM.mov"
     # a = "asdf'sddf.jpg"
@@ -143,7 +145,7 @@ def main():
         print(bar)
 
         # album_url_path = '/2012/20120101/Event'
-        album_url_path, image_name = dk.get_album_url_path_and_image_name(cursor, dk_image_id)
+        album_url_path, image_name, rating = dk.get_album_url_path_and_image_name_and_rating(cursor, dk_image_id)
 
         # check if user wants to ignore this image
         ignore = False
@@ -155,6 +157,11 @@ def main():
             if ignore:
                 print("user ignores " + album_url_path)
                 continue
+
+        # check if minimal rating is reached
+        if minimal_rating.__contains__(album_url_path) and minimal_rating[album_url_path] > rating:
+            print("exclude image {} due to too low rating".format(image_name))
+            continue
 
         keywords = dks.get_keywords(dk, cursor, dk_image_id)
         t = set(keywords).intersection(exclude_files_with_tags)
