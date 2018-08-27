@@ -113,7 +113,7 @@ class Digikam:
         # image_ids = [667587]
 
         num_images = image_ids.__len__()
-        delta = round(num_images / 55)
+        delta = round(num_images / 100)
         i = 0
         bar = ProgressBar(num_images)
 
