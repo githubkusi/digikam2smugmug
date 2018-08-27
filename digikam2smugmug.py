@@ -114,6 +114,56 @@ def shorten_album_name():
     return
 
 
+def filter_unsynced_images(dk_image_ids, minimal_rating, exclude_paths, dk, cursor):
+    minimal_default_rating = minimal_rating["DEFAULT"]
+    dk_filtered_image_ids = []
+
+    num_images = dk_image_ids.__len__()
+    delta = round(num_images / 100)
+    i = 0
+    bar = ProgressBar(num_images)
+
+    print("filter unsynced images according to .smugmug-config")
+    for dk_image_id in dk_image_ids:
+        # progress bar
+        i = i + 1
+        if i % delta == 0:
+            bar.numerator = bar.numerator + delta
+            # print(bar, flush=True)
+            print(bar, end='\r', flush=True)
+
+        # album_url_path = '/2012/20120101/Event'
+        album_url_path, image_name, rating = dk.get_album_url_path_and_image_name_and_rating(cursor, dk_image_id)
+
+        # check if user wants to ignore this image
+        ignore = False
+        if exclude_paths is not None:
+            for exclude_path in exclude_paths:
+                if album_url_path.startswith(exclude_path):
+                    ignore = True
+
+            if ignore:
+                # print("user ignores " + album_url_path)
+                continue
+
+        if rating is None:
+            rating = 0
+
+        # check if minimal rating is reached
+        if minimal_rating.__contains__(album_url_path):
+            if minimal_rating[album_url_path] > rating:
+                # print("exclude image {} due to too low rating".format(image_name))
+                continue
+        elif minimal_default_rating > rating:
+            # print("{} is below default rating".format(image_name))
+            continue
+
+        dk_filtered_image_ids.append(dk_image_id)
+
+    print("\n")
+    return dk_filtered_image_ids
+
+
 def main():
     user, password, database, digikam_node = parse_args()
 
@@ -137,31 +187,17 @@ def main():
     dk_image_ids = Digikam.get_unsynced_image_ids(cursor)
     print("Found {} unsynced images".format(dk_image_ids.__len__()))
 
-    bar = ProgressBar(dk_image_ids.__len__())
+    dk_filtered_image_ids = filter_unsynced_images(dk_image_ids, minimal_rating, exclude_paths, dk, cursor)
 
-    for dk_image_id in dk_image_ids:
+    bar = ProgressBar(dk_filtered_image_ids.__len__())
+
+    for dk_image_id in dk_filtered_image_ids:
         # progress bar
         bar.numerator = bar.numerator + 1
         print(bar)
 
         # album_url_path = '/2012/20120101/Event'
         album_url_path, image_name, rating = dk.get_album_url_path_and_image_name_and_rating(cursor, dk_image_id)
-
-        # check if user wants to ignore this image
-        ignore = False
-        if exclude_paths is not None:
-            for exclude_path in exclude_paths:
-                if album_url_path.startswith(exclude_path):
-                    ignore = True
-
-            if ignore:
-                print("user ignores " + album_url_path)
-                continue
-
-        # check if minimal rating is reached
-        if minimal_rating.__contains__(album_url_path) and minimal_rating[album_url_path] > rating:
-            print("exclude image {} due to too low rating".format(image_name))
-            continue
 
         keywords = dks.get_keywords(dk, cursor, dk_image_id)
         t = set(keywords).intersection(exclude_files_with_tags)
@@ -216,6 +252,7 @@ def main():
 
     dks.sync_tags(Digikam(), cursor, conn_dk, connection, exclude_tags)
     print('done')
+
 
 if __name__ == "__main__":
     main()

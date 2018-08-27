@@ -68,7 +68,6 @@ class Digikam:
             ImageInformation.imageid = Images.id
         WHERE
             PhotoSharing.imageid IS NULL
-            and ImageInformation.rating >= 1
             AND UPPER(ImageInformation.format) in ('MOV', 'MPEG', 'AVI', 'WMV', 'GIF', 'PNG', 'JPG', 'MP4')                        
             AND Images.status = 1
             AND Images.id not in(
