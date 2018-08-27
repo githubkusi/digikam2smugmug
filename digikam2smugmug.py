@@ -66,8 +66,8 @@ def get_digikam_node(connection, digikam_node):
     return get_node(connection, root_node, digikam_node)
 
 
-def parse_exclude_file(root_path):
-    file_name = '.smugmug-exclude'
+def parse_config_file(root_path):
+    file_name = '.smugmug-config'
     file_path = os.path.join(root_path, file_name)
 
     if not os.path.exists(file_path):
@@ -128,7 +128,7 @@ def main():
 
     root_path = dk.get_root_path(cursor)
 
-    exclude_paths, exclude_tags, exclude_files_with_tags, minimal_rating = parse_exclude_file(root_path)
+    exclude_paths, exclude_tags, exclude_files_with_tags, minimal_rating = parse_config_file(root_path)
 
     # a = "/share/Fotilis/2012/20120728 Hochzeit Landschi/Presentations/Martine à l'ENSIM.mov"
     # a = "asdf'sddf.jpg"
