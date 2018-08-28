@@ -123,7 +123,7 @@ def filter_unsynced_images(dk_image_ids, minimal_rating, exclude_paths, dk, curs
     i = 0
     bar = ProgressBar(num_images)
 
-    print("filter unsynced images according to .smugmug-config")
+    print("Filter unsynced images according to .smugmug-config")
     for dk_image_id in dk_image_ids:
         # progress bar
         i = i + 1
@@ -160,7 +160,7 @@ def filter_unsynced_images(dk_image_ids, minimal_rating, exclude_paths, dk, curs
 
         dk_filtered_image_ids.append(dk_image_id)
 
-    print("\n")
+    print("")
     return dk_filtered_image_ids
 
 
@@ -184,6 +184,7 @@ def main():
     # a = "asdf'sddf.jpg"
     # connection.upload_image(a, '/api/v2/album/7fVP8m')
 
+    print("Find unsynced images")
     dk_image_ids = Digikam.get_unsynced_image_ids(cursor)
     print("Found {} unsynced images".format(dk_image_ids.__len__()))
 
@@ -251,7 +252,7 @@ def main():
             raise ValueError('tbd')
 
     dks.sync_tags(Digikam(), cursor, conn_dk, connection, exclude_tags)
-    print('done')
+    print('Done')
 
 
 if __name__ == "__main__":

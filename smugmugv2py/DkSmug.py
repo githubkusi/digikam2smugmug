@@ -108,15 +108,25 @@ class DkSmug:
         return keywords
 
     def sync_tags(self, dk, cursor, conn_dk, connection, exclude_tags):
-        print("find images with unsynched tags")
+        print("Find images with unsynched tags")
         dk_image_ids = dk.get_image_ids_with_unsynced_tags(cursor)
-        bar = ProgressBar(dk_image_ids.__len__())
 
-        # dk_image_ids = [419792]
+        if dk_image_ids.__len__() == 0:
+            print("No unsynced tags found")
+            return
+
+        num_images = dk_image_ids.__len__()
+        delta = round(num_images / 100)
+        i = 0
+        bar = ProgressBar(num_images)
+
+        print("Sync missing tags")
         for dk_image_id in dk_image_ids:
             # progress bar
-            bar.numerator = bar.numerator + 1
-            print(bar)
+            i = i + 1
+            if i % delta == 0:
+                bar.numerator = bar.numerator + delta
+                print(bar, end='\r', flush=True)
 
             keywords = self.get_keywords(dk, cursor, dk_image_id)
 
