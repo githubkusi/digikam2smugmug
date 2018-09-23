@@ -141,7 +141,7 @@ def filter_unsynced_images(dk_image_ids, minimal_rating, exclude_paths, dk, curs
                 # print("user ignores " + album_url_path)
                 continue
 
-        if rating is None:
+        if rating is None or rating == -1:
             rating = 0
 
         # check if minimal rating is reached
