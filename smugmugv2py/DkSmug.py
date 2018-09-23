@@ -116,17 +116,13 @@ class DkSmug:
             return
 
         num_images = dk_image_ids.__len__()
-        delta = round(num_images / 100)
-        i = 0
         bar = ProgressBar(num_images)
 
         print("Sync missing tags")
         for dk_image_id in dk_image_ids:
             # progress bar
-            i = i + 1
-            if i % delta == 0:
-                bar.numerator = bar.numerator + delta
-                print(bar, end='\r', flush=True)
+            bar.numerator = bar.numerator + 1
+            print(bar, end='\r', flush=True)
 
             keywords = self.get_keywords(dk, cursor, dk_image_id)
 

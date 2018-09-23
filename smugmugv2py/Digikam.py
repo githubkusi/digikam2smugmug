@@ -113,15 +113,12 @@ class Digikam:
         # image_ids = [667587]
 
         num_images = image_ids.__len__()
-        delta = round(num_images / 100)
-        i = 0
         bar = ProgressBar(num_images)
 
         for image_id in image_ids:
-            i = i + 1
-            if i % delta == 0:
-                bar.numerator = bar.numerator + delta
-                print(bar, end='\r', flush=True)
+            # progress bar
+            bar.numerator = bar.numerator + 1
+            print(bar, end='\r', flush=True)
 
             mtime_tags_local = self.get_local_tags_mtime(cursor, image_id)
             mtime_remote = self.get_remote_tags_mtime(cursor, image_id)

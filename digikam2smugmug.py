@@ -119,18 +119,13 @@ def filter_unsynced_images(dk_image_ids, minimal_rating, exclude_paths, dk, curs
     dk_filtered_image_ids = []
 
     num_images = dk_image_ids.__len__()
-    delta = round(num_images / 100)
-    i = 0
     bar = ProgressBar(num_images)
 
     print("Filter unsynced images according to .smugmug-config")
     for dk_image_id in dk_image_ids:
         # progress bar
-        i = i + 1
-        if i % delta == 0:
-            bar.numerator = bar.numerator + delta
-            # print(bar, flush=True)
-            print(bar, end='\r', flush=True)
+        bar.numerator = bar.numerator + 1
+        print(bar, end='\r', flush=True)
 
         # album_url_path = '/2012/20120101/Event'
         album_url_path, image_name, rating = dk.get_album_url_path_and_image_name_and_rating(cursor, dk_image_id)
