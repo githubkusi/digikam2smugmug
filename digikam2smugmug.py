@@ -187,6 +187,12 @@ def main():
 
     bar = ProgressBar(dk_filtered_image_ids.__len__())
 
+    if dk_filtered_image_ids:
+        print("Start uploading images")
+
+    else:
+        print("No images to be uploaded")
+
     for dk_image_id in dk_filtered_image_ids:
         # progress bar
         bar.numerator = bar.numerator + 1
