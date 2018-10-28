@@ -122,7 +122,7 @@ class DkSmug:
         for dk_image_id in dk_image_ids:
             # progress bar
             bar.numerator = bar.numerator + 1
-            print(bar, end='\r', flush=True)
+            print(bar)
 
             keywords = self.get_keywords(dk, cursor, dk_image_id)
 
