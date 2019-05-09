@@ -9,7 +9,7 @@ class Digikam:
 
     @staticmethod
     def get_connection_and_cursor(user, passwd, db, host='localhost'):
-        con = Mdb.connect(host, user, passwd, db)
+        con = Mdb.connect(host, user, passwd, db, use_unicode=True, charset='utf8')
 
         cursor = con.cursor()
         return con, cursor
