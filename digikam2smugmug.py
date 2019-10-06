@@ -244,8 +244,8 @@ def main():
             Digikam.add_image_to_photosharing(conn_dk, cursor, dk_image_id, album_image_uri)
 
         elif image_is_remote and remote_id_is_in_database:
-            err = "requested image {} is already in remote album {} and local " \
-                  "database, impossible".format(image_name, album_node.name)
+            err = "requested image {} is already in remote album [{}] with image uri [{}] and local " \
+                  "database with imageId [{}], impossible".format(image_name, album_image_uri, album_node.name, dk_image_id)
             raise ValueError(err)
 
         elif not image_is_remote and remote_id_is_in_database:
