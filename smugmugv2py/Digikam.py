@@ -120,12 +120,17 @@ class Digikam:
             bar.numerator = bar.numerator + 1
             print(bar, end='\r', flush=True)
 
+            # tag timestamps
             mtime_tags_local = self.get_local_tags_mtime(cursor, image_id)
-            mtime_remote = self.get_remote_tags_mtime(cursor, image_id)
+            mtime_tags_remote = self.get_remote_tags_mtime(cursor, image_id)
+
+            # rating timestamp
             mtime_rating_local = self.get_local_rating_mtime(cursor, image_id)
 
-            has_outdated_tags = mtime_tags_local is not None and mtime_tags_local > mtime_remote
-            has_outdated_rating = mtime_rating_local is not None and mtime_rating_local > mtime_remote
+            has_outdated_tags = mtime_tags_local is not None and mtime_tags_local > mtime_tags_remote
+
+            # local rating is a remote tag, hence a mtime_rating_remote is not needed
+            has_outdated_rating = mtime_rating_local is not None and mtime_rating_local > mtime_tags_remote
 
             if has_outdated_tags or has_outdated_rating:
                 unsynched_image_ids.append(image_id)
