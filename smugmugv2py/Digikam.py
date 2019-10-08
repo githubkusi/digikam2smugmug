@@ -127,6 +127,9 @@ class Digikam:
             # rating timestamp
             mtime_rating_local = self.get_local_rating_mtime(cursor, image_id)
 
+            # comment (title/caption) timestamp
+            mtime_comment_local = self.get_local_comment_mtime(cursor, image_id)
+
             has_outdated_tags = mtime_tags_local is not None and mtime_tags_local > mtime_tags_remote
 
             # local rating is a remote tag, hence a mtime_rating_remote is not needed
@@ -283,6 +286,11 @@ class Digikam:
 
     @staticmethod
     def get_remote_tags_mtime(cursor, image_id):
+        """
+        :param cursor:
+        :param image_id:
+        :return: datetime.datetime(year, month, day, hour, min, sec)
+        """
         query = """
                 SELECT mtime_tags FROM PhotoSharing
                 WHERE imageid = {}
@@ -291,6 +299,27 @@ class Digikam:
         rows = cursor.fetchall()
         assert rows.__len__() == 1
         return rows[0][0]
+
+    @staticmethod
+    def get_local_title_mtime(cursor, image_id):
+        """
+        :param cursor:
+        :param image_id:
+        :return: get timestamp of title
+        """
+        query = """
+                SELECT mtime FROM ImageComments
+                WHERE imageid = {} and type = 1
+                """.format(image_id)
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        mtimes = [i[0] for i in rows]
+        return = max()
+
+        assert rows.__len__() == 1
+        return rows[0][0]
+
+
 
     # @staticmethod
     # def get_root_path(self):
@@ -335,5 +364,14 @@ class Digikam:
         identifier = rows[0][1]
         return identifier.split("networkshareid:?mountpath=", 1)[1]
 
-
+    @staticmethod
+    def delete_from_photosharing(cursor):
+        query = """
+                DELETE from PhotoSharing
+                FROM imageid in (
+                SELECT i.id from Images i
+                inner join Albums a on i.album = a.id
+                inner join PhotoSharing p on p.imageid = i.id
+                where relativePath like '%20140801 Island' )
+                """
 
