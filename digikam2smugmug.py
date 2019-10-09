@@ -71,7 +71,7 @@ def parse_config_file(root_path):
     file_path = os.path.join(root_path, file_name)
 
     if not os.path.exists(file_path):
-        return None
+        return {}, {}, {}, {}
 
     parser = configparser.ConfigParser(allow_no_value=True)
     parser.optionxform = lambda option: option
@@ -115,7 +115,8 @@ def shorten_album_name():
 
 
 def filter_unsynced_images(dk_image_ids, minimal_rating, exclude_paths, dk, cursor):
-    minimal_default_rating = minimal_rating["DEFAULT"]
+    minimal_default_rating = minimal_rating.get("DEFAULT", 0)
+
     dk_filtered_image_ids = []
 
     num_images = dk_image_ids.__len__()
@@ -133,7 +134,7 @@ def filter_unsynced_images(dk_image_ids, minimal_rating, exclude_paths, dk, curs
 
         # check if user wants to ignore this image
         ignore = False
-        if exclude_paths is not None:
+        if bool(exclude_paths):
             for exclude_path in exclude_paths:
                 if image_path.startswith(exclude_path):
                     ignore = True
