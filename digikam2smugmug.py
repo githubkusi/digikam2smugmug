@@ -204,6 +204,8 @@ def main():
         album_url_path, image_name, rating = dk.get_album_url_path_and_image_name_and_rating(cursor, dk_image_id)
 
         keywords = dks.get_keywords(dk, cursor, dk_image_id)
+        title = dk.get_title(cursor, dk_image_id)
+        caption = dk.get_caption(cursor, dk_image_id)
         t = set(keywords).intersection(exclude_files_with_tags)
         if t:
             print("exclude image {} due to tag {}".format(image_name, t))
@@ -233,7 +235,7 @@ def main():
             # normal case: upload
             print("upload image {} to album {}".format(image_name, album_node.name))
             keywords_str = '; '.join(keywords)
-            response = connection.upload_image(file_path, album_node.uri, keywords=keywords_str)
+            response = connection.upload_image(file_path, album_node.uri, caption, title, keywords_str)
             assert response['stat'] == 'ok', response['message']
             Digikam.add_image_to_photosharing(conn_dk, cursor, dk_image_id, response["Image"]["AlbumImageUri"])
 

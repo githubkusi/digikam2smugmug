@@ -230,6 +230,36 @@ class Digikam:
             raise ValueError('{} ratings found for image_id {}'.format(count, image_id))
 
     @staticmethod
+    def get_title(cursor, image_id):
+        query = """
+                SELECT comment FROM ImageComments
+                WHERE imageid = {} and type = 3
+                """.format(image_id)
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        count = rows.__len__()
+        if count > 0:
+            assert count == 1
+            return rows[0][0]
+        else:
+            return None
+
+    @staticmethod
+    def get_caption(cursor, image_id):
+        query = """
+                SELECT comment FROM ImageComments
+                WHERE imageid = {} and type = 1
+                """.format(image_id)
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        count = rows.__len__()
+        if count > 0:
+            assert count == 1
+            return rows[0][0]
+        else:
+            return None
+
+    @staticmethod
     def get_remote_id(cursor, image_id):
         query = """
         select remoteid from PhotoSharing
@@ -314,12 +344,7 @@ class Digikam:
         cursor.execute(query)
         rows = cursor.fetchall()
         mtimes = [i[0] for i in rows]
-        return = max()
-
-        assert rows.__len__() == 1
-        return rows[0][0]
-
-
+        return max(mtimes)
 
     # @staticmethod
     # def get_root_path(self):
