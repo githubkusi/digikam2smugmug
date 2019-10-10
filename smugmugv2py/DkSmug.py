@@ -86,10 +86,28 @@ class DkSmug:
 
         return None
 
-    def upload_image(self, connection, root_node, file_path, album_url_path):
-        album_node = self.get_or_create_album_from_album_path(connection, root_node, album_url_path)
-        # album = Album.get_album(connection, album)
-        return connection.upload_image(file_path, album_node.uri)
+    @staticmethod
+    def upload_image(connection, file_path, album_node_uri, title, caption, keywords):
+        """
+        :param connection:  smugmugv2py.Connection obj
+        :param file_path:
+        :param album_node_uri:
+        :param title:
+        :param caption:  str (can be multi-line)
+        :param keywords: list of str
+        :return: album_image_uri
+        """
+        keywords_str = '; '.join(keywords)
+        response = connection.upload_image(file_path, album_node_uri, title=title, keywords=keywords_str)
+        assert response['stat'] == 'ok', response['message']
+        album_image_uri = response["Image"]["AlbumImageUri"]
+
+        if caption is not None:
+            # Do caption separately since caption in the header via X-Smug-Caption doesn't
+            # support multi-line comments
+            connection.patch(album_image_uri, {"Caption": caption})
+
+        return album_image_uri
 
     @staticmethod
     def get_keywords(dk, cursor, image_id):
@@ -107,41 +125,45 @@ class DkSmug:
         keywords.append(album_name)
         return keywords
 
-    def sync_tags(self, dk, cursor, conn_dk, connection, exclude_tags):
-        print("Find images with unsynched tags")
-        dk_image_ids = dk.get_image_ids_with_unsynced_tags(cursor)
-
+    def sync_metadata(self, dk, cursor, conn_dk, connection, exclude_tags):
+        print("Find images with outdated metadata on Smugmug, according to PhotoSharing table")
+        dk_image_ids = dk.get_outdated_image_ids(cursor)
         if dk_image_ids.__len__() == 0:
-            print("No unsynced tags found")
+            print("All metadata on Smugmug are up-to-date")
             return
 
         num_images = dk_image_ids.__len__()
         bar = ProgressBar(num_images)
 
-        print("Sync missing tags")
+        print("Sync missing metadata")
         for dk_image_id in dk_image_ids:
             # progress bar
             bar.numerator = bar.numerator + 1
-            print(bar)
+            if num_images > 1000:
+                print(bar, end='\r', flush=True)
+            else:
+                print(bar)
 
             keywords = self.get_keywords(dk, cursor, dk_image_id)
 
             # breaks ordering
-            keywords = list(set(keywords) - exclude_tags)
+            if bool(exclude_tags):
+                keywords = list(set(keywords) - exclude_tags)
+
+            keywords_str = '; '.join(keywords)
+
+            title = dk.get_title(cursor, dk_image_id)
+            caption = dk.get_caption(cursor, dk_image_id)
 
             album_image_uri = dk.get_remote_id(cursor, dk_image_id)
             # album_image = AlbumImage.get_album_image(connection, album_image_uri)
             # image_uri = album_image.image_uri
-
             a = album_image_uri.split('/')
             image_uri = '/api/v2/image/' + a[-1]
 
-            # image = Image.from_album_image_inst(album_image)
-            # image = album_image.get_image(connection)
-            print("set keywords on " + image_uri, keywords)
-            # image.set_keywords(connection, keywords)
+            image_name = dk.get_image_name(cursor, dk_image_id)
+            if num_images < 1000:
+                print(f"set keywords={keywords_str}, title={title}, caption={caption} on {image_name}")
+            connection.patch(image_uri, {"KeywordArray": keywords_str, "Title": title, "Caption": caption})
 
-            connection.patch(image_uri, {"KeywordArray": keywords})
-
-            dk.update_mtime_tags(conn_dk, cursor, dk_image_id)
-
+            dk.update_metadata_mtime(conn_dk, cursor, dk_image_id)

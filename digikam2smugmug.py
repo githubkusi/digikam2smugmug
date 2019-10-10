@@ -234,10 +234,9 @@ def main():
         if not image_is_remote and not remote_id_is_in_database:
             # normal case: upload
             print("upload image {} to album {}".format(image_name, album_node.name))
-            keywords_str = '; '.join(keywords)
-            response = connection.upload_image(file_path, album_node.uri, caption, title, keywords_str)
-            assert response['stat'] == 'ok', response['message']
-            Digikam.add_image_to_photosharing(conn_dk, cursor, dk_image_id, response["Image"]["AlbumImageUri"])
+
+            album_image_uri = dks.upload_image(connection, file_path, album_node.uri, title, caption, keywords)
+            Digikam.add_image_to_photosharing(conn_dk, cursor, dk_image_id, album_image_uri)
 
         elif image_is_remote and not remote_id_is_in_database:
             # Image is remote, but not in PhotoSharing(e.g if uploader
@@ -256,7 +255,7 @@ def main():
             # overwrite what’s in PhotoSharing
             raise ValueError('tbd')
 
-    dks.sync_tags(Digikam(), cursor, conn_dk, connection, exclude_tags)
+    dks.sync_metadata(Digikam(), cursor, conn_dk, connection, exclude_tags)
     print('Done')
 
 

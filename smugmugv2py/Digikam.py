@@ -1,6 +1,7 @@
 import MySQLdb as Mdb
 import os
 from etaprogress.progress import ProgressBar
+from functools import reduce
 
 
 class Digikam:
@@ -56,6 +57,40 @@ class Digikam:
         return os.path.basename(res[0])
 
     @staticmethod
+    def get_image_name(cursor, image_id):
+        """
+        :param cursor:
+        :param image_id:
+        :return: image name, e.g. 'image.jpg'
+        """
+        query = f"""
+        select name from Images 
+        where id = {image_id} 
+        """
+
+        cursor.execute(query)
+        res = cursor.fetchone()
+        assert res is not None
+        return os.path.basename(res[0])
+
+    @staticmethod
+    def get_image_path(cursor, image_id):
+        """
+        :param cursor:
+        :param image_id:
+        :return: image path, e.g. '/2018/20180208 event/img.jpg'
+        """
+        query = f"""
+        select Albums.relativePath, Images.name from Images, Albums 
+        where Images.id = {image_id} and 
+        Albums.id = Images.album 
+        """
+        cursor.execute(query)
+        res = cursor.fetchone()
+        assert res is not None
+        return res[0] + os.path.sep + res[1]
+
+    @staticmethod
     def get_unsynced_image_ids(cursor):
         query = """
         SELECT
@@ -107,7 +142,7 @@ class Digikam:
         image_ids = [x[0] for x in rows]
         return image_ids
 
-    def get_image_ids_with_unsynced_tags(self, cursor):
+    def get_outdated_image_ids(self, cursor):
         unsynched_image_ids = []
         image_ids = self.get_synched_image_ids(cursor)
         # image_ids = [667587]
@@ -120,22 +155,33 @@ class Digikam:
             bar.numerator = bar.numerator + 1
             print(bar, end='\r', flush=True)
 
-            # tag timestamps
-            mtime_tags_local = self.get_local_tags_mtime(cursor, image_id)
-            mtime_tags_remote = self.get_remote_tags_mtime(cursor, image_id)
+            mtime_metadata_remote = self.get_remote_metadata_mtime(cursor, image_id)
 
-            # rating timestamp
+            # tag timestamps
+            # ImageTags.mtime gets updated on changing the caption/title
+            # Therefore has_outdated_tags is of limited use
+            mtime_tags_local = self.get_local_tags_mtime(cursor, image_id)
+            has_outdated_tags = mtime_tags_local is not None and mtime_tags_local > mtime_metadata_remote
+
+            # rating timestamp, local rating is a remote tag, hence a mtime_rating_remote is not needed
             mtime_rating_local = self.get_local_rating_mtime(cursor, image_id)
+            has_outdated_rating = mtime_rating_local is not None and mtime_rating_local > mtime_metadata_remote
 
             # comment (title/caption) timestamp
-            mtime_comment_local = self.get_local_comment_mtime(cursor, image_id)
+            mtime_comments_local = self.get_local_comments_mtime(cursor, image_id)
+            has_outdated_comments = mtime_comments_local is not None and mtime_comments_local > mtime_metadata_remote
 
-            has_outdated_tags = mtime_tags_local is not None and mtime_tags_local > mtime_tags_remote
+            if has_outdated_tags or has_outdated_rating or has_outdated_comments:
+                s = ""
+                if has_outdated_tags:
+                    s += "tags,"
+                if has_outdated_rating:
+                    s += "rating,"
+                if has_outdated_comments:
+                    s += "comments,"
 
-            # local rating is a remote tag, hence a mtime_rating_remote is not needed
-            has_outdated_rating = mtime_rating_local is not None and mtime_rating_local > mtime_tags_remote
-
-            if has_outdated_tags or has_outdated_rating:
+                if num_images < 1000:
+                    print(f"outdated {s[:-1]} on {self.get_image_name(cursor, image_id)}")
                 unsynched_image_ids.append(image_id)
 
         bar.numerator = num_images
@@ -244,18 +290,24 @@ class Digikam:
         else:
             return None
 
-    @staticmethod
-    def get_caption(cursor, image_id):
-        query = """
+    def get_caption(self, cursor, image_id):
+        query = f"""
                 SELECT comment FROM ImageComments
-                WHERE imageid = {} and type = 1
-                """.format(image_id)
+                WHERE imageid = {image_id} and type = 1
+                """
         cursor.execute(query)
         rows = cursor.fetchall()
         count = rows.__len__()
-        if count > 0:
-            assert count == 1
+        if count == 1:
             return rows[0][0]
+        elif count > 1:
+            image_path = self.get_image_path(cursor, image_id)
+            if reduce(lambda a, b: a if a == b else None, rows) is None:
+                Exception("{count} non-identical captions found for image {image_path}")
+            else:
+                print(f"{count} identical captions found for image {image_path}, use the first")
+                return rows[0][0]
+
         else:
             return None
 
@@ -272,9 +324,9 @@ class Digikam:
         return remote_id
 
     @staticmethod
-    def update_mtime_tags(conn_dk, cursor, image_id):
+    def update_metadata_mtime(conn_dk, cursor, image_id):
         query = """
-            UPDATE PhotoSharing SET mtime_tags = CURRENT_TIMESTAMP
+            UPDATE PhotoSharing SET mtime_metadata = CURRENT_TIMESTAMP
             WHERE imageid = {}
             """.format(image_id)
         cursor.execute(query)
@@ -315,14 +367,14 @@ class Digikam:
         return rows[0][0]
 
     @staticmethod
-    def get_remote_tags_mtime(cursor, image_id):
+    def get_remote_metadata_mtime(cursor, image_id):
         """
         :param cursor:
         :param image_id:
         :return: datetime.datetime(year, month, day, hour, min, sec)
         """
         query = """
-                SELECT mtime_tags FROM PhotoSharing
+                SELECT mtime_metadata FROM PhotoSharing
                 WHERE imageid = {}
                 """.format(image_id)
         cursor.execute(query)
@@ -331,7 +383,7 @@ class Digikam:
         return rows[0][0]
 
     @staticmethod
-    def get_local_title_mtime(cursor, image_id):
+    def get_local_comments_mtime(cursor, image_id):
         """
         :param cursor:
         :param image_id:
@@ -339,12 +391,16 @@ class Digikam:
         """
         query = """
                 SELECT mtime FROM ImageComments
-                WHERE imageid = {} and type = 1
+                WHERE imageid = {} and type in (1, 3)
                 """.format(image_id)
         cursor.execute(query)
         rows = cursor.fetchall()
         mtimes = [i[0] for i in rows]
-        return max(mtimes)
+        if mtimes.__len__() == 0:
+            return None
+        else:
+            return max(mtimes)
+
 
     # @staticmethod
     # def get_root_path(self):

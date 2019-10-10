@@ -20,16 +20,20 @@ You need to apply this PRQ https://github.com/litl/rauth/pull/201 to rauth in or
 
 # Digikamdb
 
-New table PhotoSharing
-- imageid:     Foreign Key to Images.ID (e.g 326490)
-- remoteid:    SmugmugID (e.g /api/v2/album/dpgRrc/image/9SjdbR5-0)
-- mtime\_tags: Timestamp of the tags on Smugmug being set
+## New table PhotoSharing
+- imageid:          Foreign Key to Images.ID (e.g 326490)
+- remoteid:         SmugmugID (e.g /api/v2/album/dpgRrc/image/9SjdbR5-0)
+- mtime\_metadata:  Timestamp of metadata on Smugmug. Currently, this includes rating, tags, title and caption
 
-Alter existing tables
-- Add column mtime to ImageTags        : updated when tag is set.
-                                         Retrieved with Digikam.get\_remote\_tags\_mtime()
-- Add column mtime to ImageInformation : updated when tag is set
-- Add column mtime to ImageComments    : updated when Title or Caption is set
+## Alter existing tables
+- Add column mtime to ImageTags        : updated when tag is set (seemingly it is also updated on changing the rating)
+- Add column mtime to ImageInformation : updated when rating is set
+- Add column mtime to ImageComments    : updated when title or caption is set
+
+## Convert stock digikam sql db
+mysql -uYOURLOGIN -pYOURPASS <YOURDBNAME> < sql/create-photosharing.sql
+mysql -uYOURLOGIN -pYOURPASS <YOURDBNAME> < sql/add-timestamp.sql
+
 
 
 
