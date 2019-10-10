@@ -160,6 +160,21 @@ class Connection(object):
             header_auth=True).content.decode())
 
     def upload_image(self, filename, album_uri, caption=None, title=None, keywords=None):
+        """
+        :param filename:
+        :param album_uri:
+        :param caption:
+        :param title:
+        :param keywords:
+        :return: response as dict
+               "stat": "ok",
+               "method": "smugmug.images.upload",
+               "Image": {
+                  "ImageUri": "/api/v2/album/<key>/image/<key>-0",
+                  "AlbumImageUri": "/api/v2/album/<key>/image/<key>-0",
+                  "StatusImageReplaceUri": null,
+                  "URL": "http://example.smugmug.com/My-Gallery/i-<key>"
+        """
         # x_smug_file_name = filename.encode('latin-1', 'ignore').decode()
         x_smug_file_name = filename
         headers = {
