@@ -31,4 +31,6 @@ setup(
 #        'rauth',
 #        'iso8601'
 #    ],
+    
+    entry_points={"console_scripts": ["digikam2smugmug=digikam2smugmug:main"]}, 
 )
