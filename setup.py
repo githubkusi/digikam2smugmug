@@ -27,8 +27,8 @@ setup(
     long_description=open("README.md").read(),
 
     # Dependent packages (distributions)
-    install_requires=[
-        'rauth',
-        'iso8601'
-    ],
+#    install_requires=[
+#        'rauth',
+#        'iso8601'
+#    ],
 )
