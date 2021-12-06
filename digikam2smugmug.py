@@ -130,6 +130,12 @@ def filter_unsynced_images(dk_image_ids, minimal_rating, exclude_paths, dk, curs
 
         # album_url_path = '/2012/20120101/Event'
         album_url_path, image_name, rating = dk.get_album_url_path_and_image_name_and_rating(cursor, dk_image_id)
+        if album_url_path is None:
+            # delete the following images
+            # select * from Images WHERE images.album is NULL
+            print(f'Warning! Image.id = {dk_image_id} is not part of an Album. Skipping')
+            continue
+
         image_path = album_url_path + '/' + image_name
 
         # check if user wants to ignore this image
