@@ -97,6 +97,12 @@ class DkSmug:
         :param keywords: list of str
         :return: album_image_uri
         """
+
+        if title is not None and title.__contains__("\n"):
+            print(f'Warning: {file_path} contains multiple lines, squash them into one line')
+            print(title)
+            title = title.replace('\n', ' - ')
+
         keywords_str = '; '.join(keywords)
         response = connection.upload_image(file_path, album_node_uri, title=title, keywords=keywords_str)
         assert response['stat'] == 'ok', response['message']
