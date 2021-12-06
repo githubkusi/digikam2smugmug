@@ -92,6 +92,8 @@ class Digikam:
 
     @staticmethod
     def get_unsynced_image_ids(cursor):
+        # Get images from Digikam which don't have a corresponding entry in PhotoSharing.imageid
+        # This includes images which will later be filtered due to rating/tags/etc...
         query = """
         SELECT
             Images.id
