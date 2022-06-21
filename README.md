@@ -1,24 +1,36 @@
 # smugv2py
 Python library for the SmugMug v2 API
 
-# using
+## Installation
 
-Install the freshest version
+    pipx install .
 
-    pip install --update https://github.com/adhawkins/smugmugv2py/tarball/master
+Create a file ~/.digikam2smugmug containing
 
-# want to help?
+    smugmug:
+      api_key: "Pkzb4cpnh..."
+      api_secret: "mZc83xD4D..."
+      token: "2jTmZfCbnxBVZXKfC..."
+      secret: "38WfsXWnhV..."
 
-Install it in dev mode:
+    digikam:
+      user: "user"
+      password: "pass"
+      database: "digikam tablename"
+      digikamnode: "Digikam"
 
-    python setup.py develop
 
-# Python 3 caveats
+## Python 3 caveats
 
 You need to apply this PRQ https://github.com/litl/rauth/pull/201 to rauth in order to make rauth work with python3    
 
 
 # Digikamdb
+## Requirements
+mysql_config, provided by package libmariadb-devel
+
+Installation of mysqlclient needs gcc, python38-devel 
+
 
 ## New table PhotoSharing
 - imageid:          Foreign Key to Images.ID (e.g 326490)
@@ -33,6 +45,8 @@ You need to apply this PRQ https://github.com/litl/rauth/pull/201 to rauth in or
 ## Convert stock digikam sql db
 mysql -uYOURLOGIN -pYOURPASS <YOURDBNAME> < sql/create-photosharing.sql
 mysql -uYOURLOGIN -pYOURPASS <YOURDBNAME> < sql/add-timestamp.sql
+
+
 
 
 
