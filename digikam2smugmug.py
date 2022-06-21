@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 
 # node id: 67btMX
 
@@ -242,6 +241,10 @@ def main():
             print("upload image {} to album {}".format(image_name, album_node.name))
 
             album_image_uri = dks.upload_image(connection, file_path, album_node.uri, title, caption, keywords)
+            if album_image_uri is None:
+                print(f'Failure in uploading {file_path}, skipping')
+                continue
+
             Digikam.add_image_to_photosharing(conn_dk, cursor, dk_image_id, album_image_uri)
 
         elif image_is_remote and not remote_id_is_in_database:
