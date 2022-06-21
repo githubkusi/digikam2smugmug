@@ -5,7 +5,6 @@ from smugmugv2py import Connection, User, Node, Album, AlbumImage, Image, SmugMu
 from sys import stdout, stdin
 from os import linesep, path
 from pprint import pprint
-from test_setup import api_key, api_secret, token, secret
 from datetime import datetime
 from json import dumps
 from requests import exceptions
@@ -15,6 +14,7 @@ from etaprogress.progress import ProgressBar
 import os
 import argparse
 import configparser
+import yaml
 
 
 def get_authorized_connection(api_key, api_secret, token, secret):
@@ -166,8 +166,27 @@ def filter_unsynced_images(dk_image_ids, minimal_rating, exclude_paths, dk, curs
     return dk_filtered_image_ids
 
 
+def read_config_smugmug():
+    config_filename = os.path.expanduser("~") + os.sep + ".digikam2smugmug.yml"
+    with open(config_filename, 'r') as file:
+        config = yaml.safe_load(file)
+        c = config["smugmug"]
+        return c["api_key"], c["api_secret"], c["token"], c["secret"]
+
+
+def read_config_digikam():
+    config_filename = os.path.expanduser("~") + os.sep + ".digikam2smugmug.yml"
+    with open(config_filename, 'r') as file:
+        config = yaml.safe_load(file)
+        c = config["digikam"]
+        return c["user"], c["password"], c["database"], c["digikamnode"]
+
+
 def main():
-    user, password, database, digikam_node = parse_args()
+    api_key, api_secret, token, secret = read_config_smugmug()
+
+    # user, password, database, digikam_node = parse_args()
+    user, password, database, digikam_node = read_config_digikam()
 
     connection = get_authorized_connection(api_key, api_secret, token, secret)
     dk_node = get_digikam_node(connection, digikam_node)
