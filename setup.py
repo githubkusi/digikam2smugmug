@@ -1,36 +1,15 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
-    # Application name:
-    name="smugmugv2py",
-
-    # Version number (initial):
+    name="digikam2smugmug",
     version="0.0.1",
-
-    # Application author details:
-    author="Andy Hawkins",
-    author_email="andy@gently.org.uk",
-
-    # Packages
-    packages=["smugmugv2py"],
-
-    # Include additional files into the package
-    include_package_data=True,
-
-    # Details
+    author="Markus Leuthold",
+    author_email="github@titlis.org",
+    packages=find_packages(),
+    install_requires=["rauth", "iso8601", "mysqlclient", "requests", "requests", "etaprogress", "pyyaml"],
     url="https://github.com/adhawkins/smugmugv2py",
-
-    #
-    license="LICENSE.txt",
-    description="A Python package for accessing the SmugMug v2 API.",
-
+    license="GPL",
+    description="Upload Digikam photos and metadata to Smugmug",
     long_description=open("README.md").read(),
-
-    # Dependent packages (distributions)
-#    install_requires=[
-#        'rauth',
-#        'iso8601'
-#    ],
-    
-    entry_points={"console_scripts": ["digikam2smugmug=digikam2smugmug:main"]}, 
+    entry_points={"console_scripts": ["digikam2smugmug=smugmugv2py.digikam2smugmug:main"]} 
 )
