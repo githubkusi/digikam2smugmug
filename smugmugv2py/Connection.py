@@ -26,8 +26,7 @@ class Connection(object):
     __SESSION = requests.Session()
 
     def __init__(self, api_key, api_secret, user_agent=None):
-        # self.__user_agent = 'smugmugv2py/' + get_distribution('smugmugv2py').version
-        self.__user_agent = 'smugmugv2py/kusi'
+        self.__user_agent = 'smugmugv2py/' + get_distribution('digikam2smugmug').version
         if user_agent:
             self.__user_agent += " - " + user_agent
 
