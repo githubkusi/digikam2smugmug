@@ -1,5 +1,6 @@
 # digikam2smugmug
 This project integrates [digiKam](https://www.digikam.org/), a great open source photo management tool, with [Smugmug](https://www.smugmug.com/), a feature rich photo cloud storage. DigiKam allows you to organize, tag and rate your photos. digikam2smugmug is a uni-directional sync service which uploadas your photos including tags/ratings/comments from DigiKam to Smugmug
+
 ## Motivation
 While DigiKam is a great photo management software, it lacks a cloud based front end which allows you to access your photos via web browser or mobile. Smugmug (in contrast to other platforms such as Google Photo) allows to preserve tags/comments/ratings from DigiKam. DigiKam's internal Smugmug uploader does not support a sync service which keeps Smugmug up-to-date with DigiKam's database.
 
@@ -84,7 +85,8 @@ You can configure the upload behavior with the file `.smugmug-config`, located a
     # Minimal 2 stars for photos in folder /my/event
     /my/event : 2
 
-
+## Usage
+Once you've configured your DigiKam SQL db and the config file .digikam2smugmug, simply run `digikam2smugmug`
 
 ## Issues
 * `smugmugv2py` uses [rauth](https://github.com/litl/rauth) for authentication, whose upstream seems inactive by now. This PRQ is needed to make rauth work with python3. [This fork](https://github.com/githubkusi/rauth) contains said PRQ
@@ -93,3 +95,4 @@ You can configure the upload behavior with the file `.smugmug-config`, located a
 
 ## Credits
 All the hard work of accessing Smugmug was done by Andy Hawkins with his great tool https://github.com/adhawkins/smugmugv2py. `digikam2smugmug` is basically a fork of his tool, extended with DigiKam functionality and a Python3 port.
+
