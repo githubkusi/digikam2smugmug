@@ -37,7 +37,6 @@ Resolve to https://github.com/adhawkins/smugmugv2py and https://api.smugmug.com/
 ### Requirements
 * DigiKam needs to be run with a mysql database backend
 * mysql_config, provided by package libmariadb-devel (Opensuse)
-* Installation of mysqlclient needs gcc, python38-devel 
 * Recommended: https://dbeaver.io
 
 ### New table
