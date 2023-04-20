@@ -13,7 +13,7 @@ import smugmugv2py
 
 class Connection(object):
     BASE_URL = '/api/v2'
-    UPLOAD_URL = 'http://upload.smugmug.com/'
+    UPLOAD_URL = 'https://upload.smugmug.com/'
 
     __OAUTH_ORIGIN = 'https://secure.smugmug.com'
     __REQUEST_TOKEN_URL = __OAUTH_ORIGIN + '/services/oauth/1.0a/getRequestToken'
