@@ -126,6 +126,8 @@ class Connection(object):
             header_auth=True)
 
         content = request_models_response.content
+        if not content:
+            raise Exception(request_models_response)
         response = loads(content.decode("utf-8"))
 
         return response
