@@ -85,14 +85,17 @@ def parse_config_file(root_path):
 
 
 def parse_args():
+    default_config_filename = os.path.expanduser("~") + os.sep + ".digikam2smugmug.yml"
+
     parser = argparse.ArgumentParser(description="Digikam-to-SmugMug Uploader")
-    parser.add_argument('-u', '--user', dest='user', required=True)
-    parser.add_argument('-p', '--password', dest='passwd', required=True)
-    parser.add_argument('-d', '--database', dest='database', required=True)
-    parser.add_argument('-r', '--digikamnode', dest='digikam_node', required=False, default='Digikam')
+    parser.add_argument('-u', '--user', dest='user', required=False, default=None)
+    parser.add_argument('-p', '--password', dest='passwd', required=False, default=None)
+    parser.add_argument('-d', '--database', dest='database', required=False, default=None)
+    parser.add_argument('-r', '--digikamnode', dest='digikam_node', required=False, default=None)
+    parser.add_argument('-c', '--config', dest='config', required=False, default=default_config_filename)
     args = parser.parse_args()
 
-    return args.user, args.passwd, args.database, args.digikam_node
+    return args.user, args.passwd, args.database, args.digikam_node, args.config
 
 
 def shorten_album_name():
@@ -166,16 +169,14 @@ def filter_unsynced_images(dk_image_ids, minimal_rating, exclude_paths, dk, curs
     return dk_filtered_image_ids
 
 
-def read_config_smugmug():
-    config_filename = os.path.expanduser("~") + os.sep + ".digikam2smugmug.yml"
+def read_config_smugmug(config_filename):
     with open(config_filename, 'r') as file:
         config = yaml.safe_load(file)
         c = config["smugmug"]
         return c["api_key"], c["api_secret"], c["token"], c["secret"]
 
 
-def read_config_digikam():
-    config_filename = os.path.expanduser("~") + os.sep + ".digikam2smugmug.yml"
+def read_config_digikam(config_filename):
     with open(config_filename, 'r') as file:
         config = yaml.safe_load(file)
         c = config["digikam"]
@@ -183,10 +184,16 @@ def read_config_digikam():
 
 
 def main():
-    api_key, api_secret, token, secret = read_config_smugmug()
+    user, password, database, digikam_node, config = parse_args()
+    if user is None or password is None or digikam_node is None:
+        user_cfg, password_cfg, database_cfg, digikam_node_cfg = read_config_digikam(config)
 
-    # user, password, database, digikam_node = parse_args()
-    user, password, database, digikam_node = read_config_digikam()
+    user = user or user_cfg
+    password = password or password_cfg
+    database = database or database_cfg
+    digikam_node = digikam_node or digikam_node_cfg
+
+    api_key, api_secret, token, secret = read_config_smugmug(config)
 
     connection = get_authorized_connection(api_key, api_secret, token, secret)
     dk_node = get_digikam_node(connection, digikam_node)
