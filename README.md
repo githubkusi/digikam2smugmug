@@ -14,9 +14,9 @@ While DigiKam is a great photo management software, it lacks a cloud based front
 ## Installation
 Recommended installation with [pipx](https://pypa.github.io/pipx/), but of course all other standard Python installation methods will do
 
-    pipx install .
+    pipx install git+https://github.com/githubkusi/digikam2smugmug
 
-Create a file ~/.digikam2smugmug containing
+Create a file ~/.digikam2smugmug.yml containing
 
     smugmug:
       api_key: "Pkasd434nh..."
@@ -92,6 +92,18 @@ Once you've configured your DigiKam SQL db and the config file .digikam2smugmug,
 * `smugmugv2py` uses [rauth](https://github.com/litl/rauth) for authentication, whose upstream seems inactive by now. This PRQ is needed to make rauth work with python3. [This fork](https://github.com/githubkusi/rauth) contains said PRQ
 * This tool is being used since 2018. So far, each version of DigiKam was compatible with the altered db setup. However this is not guaranteed to work with future versions. Whenever you update your DigiKam installation, make sure you backup your db
 * Deleting albums is not yet fully implemented. Albums need to be deleted manually on Smugmug. Check the script `src/delete-album-from-photosharing.sql` to delete traces of Smugmug in the DigiKam Core db
+
+## Development
+Recommended way to debug/develop new featues in an isolated and controlled environment, in order not to affect an existing setup of Digikam/Smugmug
+- Copy your existing digikam2smugmug.yml to your working copy, as digikam2smugmug-dev.yml
+- In the yml file, change user=dkuser, password=dkpasswd, database=digikam_devel_core, digikamnode=DigikamDev
+- Clone https://github.com/githubkusi/digikam_controlled_environment and perform the prerequisites
+- To (re-)start with a clean photosharing table / empty timestamp column, run `digikam_photosharing`
+- In your Python IDE, create a run configuration which calls `digikam2smugmug --config digikam2smugmug-dev.yml`
+- In Smugmug, you might want to delete an already existing folder `DigikamDev/my-album`
+
+
+
 
 ## Credits
 All the hard work of accessing Smugmug was done by Andy Hawkins with his great tool https://github.com/adhawkins/smugmugv2py. `digikam2smugmug` is basically a fork of his tool, extended with DigiKam functionality and a Python3 port.
