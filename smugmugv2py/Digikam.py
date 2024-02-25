@@ -445,7 +445,7 @@ class Digikam:
         assert rows.__len__() == 1, "Only one album root supported but you have {}".format(rows.__len__())
         assert rows[0][0] == 3, "Only network shares are supported"
         identifier = rows[0][1]
-        return identifier.split("networkshareid:?mountpath=", 1)[1]
+        return identifier.split("networkshareid:?mountpath=", 1)[1].split("&fileuuid")[0]
 
     @staticmethod
     def delete_from_photosharing(cursor):
